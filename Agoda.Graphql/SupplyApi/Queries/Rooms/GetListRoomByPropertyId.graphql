@@ -1,0 +1,15 @@
+query GetListRoomByPropertyId($hotelId: Int!, $recStatusCore: String!, $recStatusYcs: String!){
+  RoomsByPropertyAndRecStatus(propertyId: $hotelId, recStatusCore: $recStatusCore, recStatusYcs: $recStatusYcs){
+    id
+    dmcRoomId
+    allotmentAutoTopup 
+    hotelRoomTypeId
+    noOfRoom
+    hotelId
+    hotelRoomTypeYcsFlag
+    masterRoomTypeId
+    maxOccupancy
+    maxAdultsOccupancy
+    inventoryTypeId
+  }
+}

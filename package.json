@@ -1,0 +1,25 @@
+{
+  "name": "graphql-csharp-generator",
+  "version": "1.0.0",
+  "main": "index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "generate-graphql": "node ./dist/generate.js --schema-url 'https://smapi-qa-http.privatecloud.qa.agoda.is/v2/graphql' --graphql-dir './Agoda.Graphql/SupplyApi/Queries'",
+    "build": "tsc"
+  },
+  "bin": {
+    "graphql-csharp-generator": "./dist/generate.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "agoda-graphql-codegen-csharp": "^1.1.318",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
