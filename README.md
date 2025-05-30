@@ -2,7 +2,7 @@
 
 ## installation
 ```node
-npm install -g graphql-csharp-generator
+npm install -g agoda-graphql-csharp-generator
 ```
 
 ## how to use

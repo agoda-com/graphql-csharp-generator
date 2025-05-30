@@ -1,16 +1,16 @@
 {
-  "name": "graphql-csharp-generator",
+  "name": "agoda-graphql-csharp-generator",
   "version": "1.0.0",
   "main": "index.js",
   "files": [
     "dist"
   ],
   "scripts": {
-    "generate-graphql": "node ./dist/generate.js --schema-url 'https://smapi-qa-http.privatecloud.qa.agoda.is/v2/graphql' --graphql-dir './Agoda.Graphql/SupplyApi/Queries'",
+    "generate-graphql": "ts-node ./src/generate.ts --schema-url 'https://smapi-qa-http.privatecloud.qa.agoda.is/v2/graphql' --graphql-dir './Agoda.Graphql/SupplyApi/Queries'",
     "build": "tsc"
   },
   "bin": {
-    "graphql-csharp-generator": "./dist/generate.js"
+    "graphql-csharp-generator": "dist/generate.js"
   },
   "keywords": [],
   "author": "",
