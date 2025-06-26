@@ -9,8 +9,6 @@ const getGqlGenCommand = (): string => {
     try {
         // Find the graphql-code-generator package that provides gql-gen
         const gqlGenPath = require.resolve('graphql-code-generator/dist/cli.js');
-        console.log("gqlGenPath:", gqlGenPath);
-        
         return `node "${gqlGenPath}"`;
     } catch (error) {
         // Fallback to npx with correct package name

@@ -1,6 +1,6 @@
 {
   "name": "agoda-graphql-csharp-generator",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "main": "index.js",
   "files": [
     "dist"
@@ -22,7 +22,6 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "agoda-graphql-codegen-csharp": "^1.1.318",
-    "graphql-code-generator": "^0.10.7"
+    "agoda-graphql-codegen-csharp": "^1.1.318"
   }
 }
