@@ -15,8 +15,6 @@ graphql-csharp-generator --schema-url 'https://smapi-qa-http.privatecloud.qa.ago
 ```
 
 # Notes:
-- as of now, publish npm package will be trigger once release created
-  - it's using free account so it can be deployed once a day
-- need to improve
-  - automate job to update semver version
-  - automate job to create release and tags
+- `--graphql-dir` directory that you pass here, it will be the namespace for generated csharp file ⚠️⚠️⚠️
+- automate job to update semver version
+- automate job to create release and tags
