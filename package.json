@@ -23,5 +23,8 @@
   },
   "dependencies": {
     "agoda-graphql-codegen-csharp": "^1.1.318"
-  }
+  },
+  "bundledDependencies": [
+    "agoda-graphql-codegen-csharp"
+  ]
 }
