@@ -47,7 +47,7 @@ const generateGraphql = async (schemaUrl: string, filePath: string): Promise<voi
 
     await new Promise<void>((resolve, reject) => {
         exec(
-            `gql-gen --schema '${schemaUrl}' --template agoda-graphql-codegen-csharp --out ${folder} ${filePath}`,
+            `npx gql-gen --schema '${schemaUrl}' --template agoda-graphql-codegen-csharp --out ${folder} ${filePath}`,
             (error, stdout, stderr) => {
                 if (error) {
                     console.error(`Error: ${error.message}`);
