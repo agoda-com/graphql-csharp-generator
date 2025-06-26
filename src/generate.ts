@@ -4,6 +4,21 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { exec } from 'child_process';
 
+// Helper to find the gql-gen binary
+const getGqlGenCommand = (): string => {
+    try {
+        // Find the graphql-code-generator package that provides gql-gen
+        const gqlGenPath = require.resolve('graphql-code-generator/dist/cli.js');
+        console.log("gqlGenPath:", gqlGenPath);
+        
+        return `node "${gqlGenPath}"`;
+    } catch (error) {
+        // Fallback to npx with correct package name
+        console.warn('Could not resolve gql-gen binary, falling back to npx');
+        return 'npx graphql-code-generator';
+    }
+};
+
 // Helper to get argument value from CLI
 const getArgValue = (argName: string): string | undefined => {
     const args = process.argv.slice(2);
@@ -44,10 +59,11 @@ async function removeInputTypesRegion(filePath: string): Promise<void> {
 // Generate GraphQL code and post-process
 const generateGraphql = async (schemaUrl: string, filePath: string): Promise<void> => {
     const folder = path.dirname(filePath);
+    const gqlGenCommand = getGqlGenCommand();
 
     await new Promise<void>((resolve, reject) => {
         exec(
-            `gql-gen --schema '${schemaUrl}' --template agoda-graphql-codegen-csharp --out ${folder} ${filePath}`,
+            `${gqlGenCommand} --schema '${schemaUrl}' --template agoda-graphql-codegen-csharp --out ${folder} ${filePath}`,
             (error, stdout, stderr) => {
                 if (error) {
                     console.error(`Error: ${error.message}`);
