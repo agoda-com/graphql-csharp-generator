@@ -23,7 +23,6 @@ const getArgValue = (argName: string): string | undefined => {
     const index = args.indexOf(`--${argName}`)
     if (index !== -1 && args[index + 1]) {
         let value = args[index + 1]
-        // Remove surrounding quotes if they exist
         if ((value.startsWith("'") && value.endsWith("'")) || (value.startsWith('"') && value.endsWith('"'))) {
             value = value.slice(1, -1)
         }
@@ -67,7 +66,6 @@ const generateGraphql = async (schemaUrl: string, filePath: string): Promise<voi
     const gqlGenCommand = getGqlGenCommand()
 
     await new Promise<void>((resolve, reject) => {
-        console.warn(`Generating code for ${filePath}...`)
         exec(
             `${gqlGenCommand} --schema "${schemaUrl}" --template agoda-graphql-codegen-csharp --out "${folder}" "${filePath}"`,
             (error, stdout, stderr) => {
@@ -75,9 +73,6 @@ const generateGraphql = async (schemaUrl: string, filePath: string): Promise<voi
                     console.error(`Error: ${error.message}`)
                     reject(error)
                     return
-                }
-                if (stderr) {
-                    console.warn(`Warning: ${stderr}`)
                 }
                 resolve()
             }
@@ -127,7 +122,6 @@ const run = async (): Promise<void> => {
     const graphqlFiles = await getGraphqlFiles(rawGraphqlDirectory, '.graphql')
 
     for (const f of graphqlFiles) {
-        console.log(`Processing file: ${f}`)
         await generateGraphql(schemaUrl, f)
     }
 }
