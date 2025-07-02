@@ -48,7 +48,7 @@ const deleteFiles = async (listFiles: string[]): Promise<void> => {
 // Remove input types region and update namespace/usings
 async function removeInputTypesRegion(filePath: string): Promise<void> {
     const fileName = path.parse(filePath).name.replace('.generated', '')
-    const folder = path.dirname(filePath).replace(/\//g, '.')
+    const folder = path.dirname(filePath).replace(/[/\\]/g, '.')
     const namespace = `${folder}.${fileName}`
 
     let content = await fs.readFile(filePath, 'utf8')
