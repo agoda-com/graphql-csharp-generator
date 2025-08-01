@@ -7,6 +7,7 @@
   ],
   "scripts": {
     "generate-graphql": "ts-node ./src/generate.ts --schema-url 'https://smapi-qa-http.privatecloud.qa.agoda.is/v2/graphql' --graphql-dir './Agoda.Graphql/SupplyApi/Queries'",
+    "generate-graphql-bapi": "ts-node ./src/generate.ts --schema-url 'https://booking-query-high-qa.privatecloud.qa.agoda.is' --graphql-dir './Agoda.Graphql/BookingQueries'",
     "build": "tsc"
   },
   "bin": {
