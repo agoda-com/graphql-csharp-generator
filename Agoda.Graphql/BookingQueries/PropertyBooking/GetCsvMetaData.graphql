@@ -1,0 +1,10 @@
+query GetCsvMetaData($ycsCriteria: YCSCriteria!) {
+  PropertyBookingByYCSCriteria(YCSCriteria: $ycsCriteria) {
+    pagination {
+      page
+      pageSize
+      totalPages
+      totalRecords
+    }
+  }
+} 

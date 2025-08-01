@@ -1,0 +1,11 @@
+query GetDiscountBreakdownByBookingId($bookingId: Long!) {
+  DiscountBreakdownByBookingIds(bookingIds: [$bookingId]) {
+    bookingId
+    discountId
+    discountType
+    discountName
+    discountRateType
+    discountRate
+    appliedDate
+	}
+}
