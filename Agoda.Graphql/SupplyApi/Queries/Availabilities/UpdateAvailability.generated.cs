@@ -4,19 +4,22 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Agoda.Graphql;
 
-
-
-
-#region UpdateAvailability 
-
-namespace Agoda.Graphql.SupplyApi.Queries.Availabilities.UpdateAvailability 
+namespace Agoda.Graphql.UpdateAvailability
 {
-
-    /// <summary>Operation Type</summary>
     public partial class Mutation : QueryBase<Data>
-    { 
+    {
         private const string _query = @"mutation UpdateAvailability($dmcId: Int!, $hotelId: String!, $roomTypeId: String!, $userId: String!, $startDate: Date!, $endDate: Date!, $regularAllotment: Int, $guaranteedAllotment: Int, $dayOfWeek: [Int!]) {
-  AvailabilityMutation(dmcId: $dmcId, hotelId: $hotelId, roomTypeId: $roomTypeId, endDate: $endDate, startDate: $startDate, userId: $userId, regularAllotment: $regularAllotment, guaranteedAllotment: $guaranteedAllotment, dayOfWeek: $dayOfWeek) {
+  AvailabilityMutation(
+    dmcId: $dmcId
+    hotelId: $hotelId
+    roomTypeId: $roomTypeId
+    endDate: $endDate
+    startDate: $startDate
+    userId: $userId
+    regularAllotment: $regularAllotment
+    guaranteedAllotment: $guaranteedAllotment
+    dayOfWeek: $dayOfWeek
+  ) {
     regularAllotment
     guaranteedAllotment
     guaranteedAllotmentUsed
@@ -66,23 +69,21 @@ namespace Agoda.Graphql.SupplyApi.Queries.Availabilities.UpdateAvailability
             { "endDate", EndDate.ToString("yyyy-MM-dd") },
             { "regularAllotment", RegularAllotment },
             { "guaranteedAllotment", GuaranteedAllotment },
-            { "dayOfWeek", DayOfWeek },
-        };        
+            { "dayOfWeek", DayOfWeek }
+        };
     }
 
     public sealed class Data
-    {
-        
+    {        
         
         [JsonProperty("AvailabilityMutation")]
         public List<AvailabilityMutation> AvailabilityMutation { get; set; }
     }
-
     
     /// <summary>Inner Model</summary> 
     public sealed class AvailabilityMutation 
     {
-        
+                
         
         [JsonProperty("regularAllotment")]
         public int? RegularAllotment { get; set; }
@@ -132,6 +133,3 @@ namespace Agoda.Graphql.SupplyApi.Queries.Availabilities.UpdateAvailability
         public string ModifiedBy { get; set; }
     }
 }
-
-#endregion
-

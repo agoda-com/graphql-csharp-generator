@@ -1,0 +1,9 @@
+overwrite: true
+schema: "https://smapi-qa-http.privatecloud.qa.agoda.is/v2/graphql"
+documents: 
+  - "Agoda.Graphql/SupplyApi/Queries/Availabilities/UpdateAvailability.graphql"  
+generates:
+  # Generate C# files for each GraphQL operation
+  ./Agoda.Graphql/SupplyApi/Queries/Availabilities/UpdateAvailability.generated.cs:
+    plugins:
+      - ./my-plugin.js
