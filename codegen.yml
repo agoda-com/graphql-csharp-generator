@@ -1,0 +1,14 @@
+overwrite: true
+schema: "https://smapi-qa-http.privatecloud.qa.agoda.is/v2/graphql"
+generates:
+  # Generate C# files for each GraphQL operation
+  ./Agoda.Graphql/SupplyApi/Queries/Rooms/GetListRoomByPropertyId.generated.cs:
+    documents:
+      - "Agoda.Graphql/SupplyApi/Queries/Rooms/GetListRoomByPropertyId.graphql"
+    plugins:
+      - "./dist/agoda-csharp-codegen.js"
+  # ./Agoda.Graphql/SupplyApi/Queries/Availabilities/GetAvailabilities.generated.cs:
+  #   documents:
+  #     - "Agoda.Graphql/SupplyApi/Queries/Availabilities/GetAvailabilities.graphql"
+  #   plugins:
+  #     - ./agoda-csharp-codegen.js

@@ -4,19 +4,22 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Agoda.Graphql;
 
-
-
-
-#region UpdateAvailability 
-
-namespace Agoda.Graphql.SupplyApi.Queries.Availabilities.UpdateAvailability 
+namespace Agoda.Graphql.UpdateAvailability
 {
-
-    /// <summary>Operation Type</summary>
     public partial class Mutation : QueryBase<Data>
-    { 
+    {
         private const string _query = @"mutation UpdateAvailability($dmcId: Int!, $hotelId: String!, $roomTypeId: String!, $userId: String!, $startDate: Date!, $endDate: Date!, $regularAllotment: Int, $guaranteedAllotment: Int, $dayOfWeek: [Int!]) {
-  AvailabilityMutation(dmcId: $dmcId, hotelId: $hotelId, roomTypeId: $roomTypeId, endDate: $endDate, startDate: $startDate, userId: $userId, regularAllotment: $regularAllotment, guaranteedAllotment: $guaranteedAllotment, dayOfWeek: $dayOfWeek) {
+  AvailabilityMutation(
+    dmcId: $dmcId
+    hotelId: $hotelId
+    roomTypeId: $roomTypeId
+    endDate: $endDate
+    startDate: $startDate
+    userId: $userId
+    regularAllotment: $regularAllotment
+    guaranteedAllotment: $guaranteedAllotment
+    dayOfWeek: $dayOfWeek
+  ) {
     regularAllotment
     guaranteedAllotment
     guaranteedAllotmentUsed
@@ -32,7 +35,17 @@ namespace Agoda.Graphql.SupplyApi.Queries.Availabilities.UpdateAvailability
   }
 }";
 
-        public Mutation(int dmcId, string hotelId, string roomTypeId, string userId, DateTime startDate, DateTime endDate, int? regularAllotment, int? guaranteedAllotment, List<int?> dayOfWeek, IResultProcessor<Data> resultProcessor = null) : base(resultProcessor)
+        public int DmcId { get; }
+        public string HotelId { get; }
+        public string RoomTypeId { get; }
+        public string UserId { get; }
+        public DateTime StartDate { get; }
+        public DateTime EndDate { get; }
+        public int? RegularAllotment { get; }
+        public int? GuaranteedAllotment { get; }
+        public List<int>? DayOfWeek { get; }
+
+        public Mutation(int dmcId, string hotelId, string roomTypeId, string userId, DateTime startDate, DateTime endDate, int? regularAllotment, int? guaranteedAllotment, List<int>? dayOfWeek, IResultProcessor<Data> resultProcessor = null) : base(resultProcessor)
         {
             DmcId = dmcId;
             HotelId = hotelId;
@@ -45,15 +58,6 @@ namespace Agoda.Graphql.SupplyApi.Queries.Availabilities.UpdateAvailability
             DayOfWeek = dayOfWeek;
         }
         
-        public int DmcId { get; }
-        public string HotelId { get; }
-        public string RoomTypeId { get; }
-        public string UserId { get; }
-        public DateTime StartDate { get; }
-        public DateTime EndDate { get; }
-        public int? RegularAllotment { get; }
-        public int? GuaranteedAllotment { get; }
-        public List<int?> DayOfWeek { get; }
         protected override string QueryText => _query;
 
         protected override Dictionary<string, object> Variables => new Dictionary<string, object>
@@ -66,23 +70,21 @@ namespace Agoda.Graphql.SupplyApi.Queries.Availabilities.UpdateAvailability
             { "endDate", EndDate.ToString("yyyy-MM-dd") },
             { "regularAllotment", RegularAllotment },
             { "guaranteedAllotment", GuaranteedAllotment },
-            { "dayOfWeek", DayOfWeek },
-        };        
+            { "dayOfWeek", DayOfWeek }
+        };
     }
 
     public sealed class Data
-    {
-        
+    {        
         
         [JsonProperty("AvailabilityMutation")]
-        public List<AvailabilityMutation> AvailabilityMutation { get; set; }
+        public AvailabilityMutation AvailabilityMutation { get; set; }
     }
-
     
     /// <summary>Inner Model</summary> 
     public sealed class AvailabilityMutation 
     {
-        
+                
         
         [JsonProperty("regularAllotment")]
         public int? RegularAllotment { get; set; }
@@ -109,7 +111,7 @@ namespace Agoda.Graphql.SupplyApi.Queries.Availabilities.UpdateAvailability
         
         
         [JsonProperty("dmcId")]
-        public int DmcId { get; set; }
+        public string DmcId { get; set; }
         
         
         [JsonProperty("roomId")]
@@ -125,13 +127,10 @@ namespace Agoda.Graphql.SupplyApi.Queries.Availabilities.UpdateAvailability
         
         
         [JsonProperty("modifiedWhen")]
-        public DateTime? ModifiedWhen { get; set; }
+        public DateTime ModifiedWhen { get; set; }
         
         
         [JsonProperty("modifiedBy")]
         public string ModifiedBy { get; set; }
     }
 }
-
-#endregion
-

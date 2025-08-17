@@ -4,19 +4,18 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Agoda.Graphql;
 
-
-
-
-#region GetAvailabilities 
-
-namespace Agoda.Graphql.SupplyApi.Queries.Availabilities.GetAvailabilities 
+namespace Agoda.Graphql.GetAvailabilities
 {
-
-    /// <summary>Operation Type</summary>
     public partial class Query : QueryBase<Data>
-    { 
+    {
         private const string _query = @"query GetAvailabilities($propertyId: String!, $dmcId: Int!, $roomTypeId: String, $startDate: Date!, $endDate: Date!) {
-  Availabilities(hotelId: $propertyId, dmcId: $dmcId, roomTypeId: $roomTypeId, startDate: $startDate, endDate: $endDate) {
+  Availabilities(
+    hotelId: $propertyId
+    dmcId: $dmcId
+    roomTypeId: $roomTypeId
+    startDate: $startDate
+    endDate: $endDate
+  ) {
     propertyId
     roomId
     dmcId
@@ -54,23 +53,21 @@ namespace Agoda.Graphql.SupplyApi.Queries.Availabilities.GetAvailabilities
             { "dmcId", DmcId },
             { "roomTypeId", RoomTypeId },
             { "startDate", StartDate.ToString("yyyy-MM-dd") },
-            { "endDate", EndDate.ToString("yyyy-MM-dd") },
-        };        
+            { "endDate", EndDate.ToString("yyyy-MM-dd") }
+        };
     }
 
     public sealed class Data
-    {
-        
+    {        
         
         [JsonProperty("Availabilities")]
         public List<Availabilities> Availabilities { get; set; }
     }
-
     
     /// <summary>Inner Model</summary> 
     public sealed class Availabilities 
     {
-        
+                
         
         [JsonProperty("propertyId")]
         public string PropertyId { get; set; }
@@ -120,6 +117,3 @@ namespace Agoda.Graphql.SupplyApi.Queries.Availabilities.GetAvailabilities
         public DateTime? ModifiedWhen { get; set; }
     }
 }
-
-#endregion
-

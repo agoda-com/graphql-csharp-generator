@@ -1,12 +1,13 @@
 {
   "name": "agoda-graphql-csharp-generator",
   "version": "1.2.1",
-  "main": "index.js",
+  "main": "dist/agoda-csharp-codegen.js",
   "files": [
     "dist"
   ],
   "scripts": {
     "generate-graphql": "ts-node ./src/generate.ts --schema-url 'https://smapi-qa-http.privatecloud.qa.agoda.is/v2/graphql' --graphql-dir './Agoda.Graphql/SupplyApi/Queries'",
+    "generate-graphql-csharp": "gql-gen --config codegen.yml",
     "build": "tsc"
   },
   "bin": {
@@ -17,11 +18,12 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "graphql": "^16.0.0",
+    "@graphql-codegen/cli": "^5.0.7",
+    "@graphql-codegen/plugin-helpers": "^5.1.1",
+    "@types/graphql": "^14.5.0",
     "@types/node": "^22.15.21",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
-  },
-  "dependencies": {
-    "agoda-graphql-codegen-csharp": "^1.1.318"
   }
 }
