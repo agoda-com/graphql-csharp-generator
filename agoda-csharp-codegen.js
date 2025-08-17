@@ -66,6 +66,7 @@ const convertGraphQLTypeToCSharp = (input, schema = null) => {
     case 'String': csharpType = 'string'; break;
     case 'Int': csharpType = 'int'; break;
     case 'BigInt': csharpType = 'long'; break;
+    case 'BigDecimal': csharpType = 'decimal'; break;
     case 'Long': csharpType = 'long'; break;
     case 'Float': csharpType = 'double'; break;
     case 'Boolean': csharpType = 'bool'; break;
