@@ -14,16 +14,27 @@ const getOperationCSharpClassName = (operation) => {
   }
 };
 
-const convertGraphQLTypeToCSharp = (astType, schema) => {
-  const schemaType = typeFromAST(schema, astType);
+const convertGraphQLTypeToCSharp = (input, schema = null) => {
+  let schemaType;
   
-  if (!schemaType) {
-    // Fallback to old method if conversion fails
-    const typeName = astType.kind === 'NamedType' ? astType.name.value : 'object';
-    return toPascalCase(typeName);
+  // Handle both AST types and schema types
+  if (input && typeof input === 'object' && input.kind) {
+    // This is an AST type, convert to schema type
+    if (!schema) {
+      throw new Error('Schema is required when converting AST types');
+    }
+    schemaType = typeFromAST(schema, input);
+    
+    if (!schemaType) {
+      // Fallback to old method if conversion fails
+      const typeName = input.kind === 'NamedType' ? input.name.value : 'object';
+      return toPascalCase(typeName);
+    }
+  } else {
+    // This is already a schema type
+    schemaType = input;
   }
   
-  // Now use the schema-based conversion (same logic as convertSchemaTypeToCSharp)
   let currentType = schemaType;
   let isRequired = false;
   let isList = false;
@@ -96,6 +107,112 @@ const getOperationsDefinitions = (documents) => {
   return operations;
 };
 
+// Helper function to get field type from schema
+const getFieldTypeFromSchema = (parentType, fieldName) => {
+  try {
+    if (!parentType || !parentType.getFields) {
+      // console.log(`Parent type ${parentType?.name || 'unknown'} has no getFields method`);
+      return null;
+    }
+    
+    const fields = parentType.getFields();
+    const field = fields[fieldName];
+    
+    if (!field) {
+      // console.log(`Field ${fieldName} not found in type ${parentType.name}`);
+      return null;
+    }
+    
+    return field.type;
+  } catch (error) {
+    // console.log(`Error getting field type for ${fieldName}:`, error.message);
+    return null;
+  }
+};
+
+// Helper function to generate nested class code
+const generateNestedClass = (className, properties) => {
+  const classProperties = properties.map(prop => 
+    `        
+    [JsonProperty("${prop.name}")]
+    public ${prop.type} ${prop.pascalName} { get; set; }`
+  ).join('\n');
+  
+  return `    
+  public sealed class ${className} 
+  {${classProperties}
+  }`;
+};
+
+// Helper function to parse selection set recursively
+const parseSelectionSet = (selectionSet, parentType = null, responseClasses = new Set()) => {
+  if (!selectionSet || !selectionSet.selections) return [];
+  const properties = [];
+  
+  selectionSet.selections.forEach(selection => {
+    if (selection.kind === 'Field') {
+      const fieldName = selection.name.value;
+      const pascalFieldName = toPascalCase(fieldName);
+      
+      // Get actual field type from schema
+      let csharpType = 'string'; // fallback
+      let fieldType = null;
+      
+      if (parentType) {
+        fieldType = getFieldTypeFromSchema(parentType, fieldName);            
+        if (fieldType) {
+          // Convert the actual GraphQL schema type to C#
+          csharpType = convertGraphQLTypeToCSharp(fieldType);
+        }
+      }
+      
+      // If this field has a selection set, it's a complex type
+      if (selection.selectionSet) {
+        const nestedClassName = pascalFieldName;
+        
+        // Get the nested type from schema
+        let nestedType = null;
+        if (fieldType) {
+          nestedType = getNamedType(fieldType);
+        }
+        
+        // Determine if it's a list and set the correct C# type
+        if (fieldType) {
+          let tempType = fieldType;
+          let isList = false;
+          
+          // Unwrap NonNull
+          if (isNonNullType(tempType)) {
+            tempType = tempType.ofType;
+          }
+          
+          // Check if it's a list
+          if (isListType(tempType)) {
+            isList = true;
+          }
+          
+          csharpType = isList ? `List<${nestedClassName}>` : nestedClassName;
+        }
+        
+        // Parse nested selection set
+        const nestedProperties = parseSelectionSet(selection.selectionSet, nestedType, responseClasses);
+        
+        // Generate the nested class
+        const nestedClass = generateNestedClass(nestedClassName, nestedProperties);
+        responseClasses.add(nestedClass);
+      }
+      
+      properties.push({
+        name: fieldName,
+        pascalName: pascalFieldName,
+        type: csharpType
+      });
+    }
+  });
+  
+  return properties;
+};
+
 module.exports = {
   plugin(schema, documents, config, { outputFile }) {  
     const operationsDefinitions = getOperationsDefinitions(documents);
@@ -156,196 +273,6 @@ module.exports = {
     // Parse selection set to generate response classes
     const responseClasses = new Set();
     
-    // Helper function to get field type from schema
-    const getFieldTypeFromSchema = (parentType, fieldName) => {
-      try {
-        if (!parentType || !parentType.getFields) {
-          // console.log(`Parent type ${parentType?.name || 'unknown'} has no getFields method`);
-          return null;
-        }
-        
-        const fields = parentType.getFields();
-        const field = fields[fieldName];
-        
-        if (!field) {
-          // console.log(`Field ${fieldName} not found in type ${parentType.name}`);
-          return null;
-        }
-        
-        return field.type;
-      } catch (error) {
-        // console.log(`Error getting field type for ${fieldName}:`, error.message);
-        return null;
-      }
-    };
-    
-    // Helper function to convert GraphQL schema types directly to C#
-    const convertSchemaTypeToCSharp = (graphqlType) => {
-      // console.log('Converting schema type:', graphqlType.toString());
-      
-      let currentType = graphqlType;
-      let isRequired = false;
-      let isList = false;
-      
-      // Handle NonNull types (required fields)
-      if (isNonNullType(currentType)) {
-        isRequired = true;
-        currentType = currentType.ofType;
-      }
-      
-      // Handle List types 
-      if (isListType(currentType)) {
-        isList = true;
-        currentType = currentType.ofType;
-        
-        // Handle NonNull inside List
-        if (isNonNullType(currentType)) {
-          currentType = currentType.ofType;
-        }
-      }
-      
-      // Get the named type
-      const namedType = getNamedType(currentType);
-      const typeName = namedType.name;
-      
-      // Map GraphQL types to C#
-      let csharpType;
-      switch (typeName) {
-        case 'String': csharpType = 'string'; break;
-        case 'Int': csharpType = 'int'; break;
-        case 'Float': csharpType = 'double'; break;
-        case 'Boolean': csharpType = 'bool'; break;
-        case 'Date': csharpType = 'DateTime'; break;
-        case 'DateTime': csharpType = 'DateTime'; break;
-        case 'ID': csharpType = 'string'; break;
-        default:
-          // Custom types - use PascalCase
-          csharpType = toPascalCase(typeName);
-          break;
-      }
-      
-      // Handle lists and nullability
-      if (isList) {
-        const innerType = (csharpType === 'string' || isRequired) ? csharpType : `${csharpType}?`;
-        csharpType = `List<${innerType}>`;
-      } else if (!isRequired && csharpType !== 'string') {
-        csharpType += '?';
-      }
-      
-      // console.log('Final C# type from schema:', csharpType);
-      return csharpType;
-    };
-    
-    // Helper function to parse selection set recursively
-    const parseSelectionSet = (selectionSet, parentType = null) => {
-      if (!selectionSet || !selectionSet.selections) return [];
-      const properties = [];
-      
-      selectionSet.selections.forEach(selection => {
-        if (selection.kind === 'Field') {
-          const fieldName = selection.name.value;
-          const pascalFieldName = toPascalCase(fieldName);
-          
-          // Get actual field type from schema
-          let csharpType = 'string'; // fallback
-          let fieldType = null;
-          
-          if (parentType) {
-            fieldType = getFieldTypeFromSchema(parentType, fieldName);
-            if (fieldType) {
-              // Convert the actual GraphQL schema type to C#
-              csharpType = convertSchemaTypeToCSharp(fieldType);
-            } else {
-              // Fallback to field name inference
-              csharpType = inferCSharpTypeFromFieldName(fieldName);
-            }
-          } else {
-            // Fallback to field name inference when no parent type
-            csharpType = inferCSharpTypeFromFieldName(fieldName);
-          }
-          
-          // If this field has a selection set, it's a complex type
-          if (selection.selectionSet) {
-            const nestedClassName = pascalFieldName;
-            
-            // Get the nested type from schema
-            let nestedType = null;
-            if (fieldType) {
-              nestedType = getNamedType(fieldType);
-              // console.log(`Nested type for ${fieldName}:`, nestedType?.name);
-            }
-            
-            // Determine if it's a list and set the correct C# type
-            if (fieldType) {
-              let tempType = fieldType;
-              let isList = false;
-              
-              // Unwrap NonNull
-              if (isNonNullType(tempType)) {
-                tempType = tempType.ofType;
-              }
-              
-              // Check if it's a list
-              if (isListType(tempType)) {
-                isList = true;
-              }
-              
-              csharpType = isList ? `List<${nestedClassName}>` : nestedClassName;
-            } else {
-              // Fallback - assume it's a list if field name suggests it (plural form)
-              csharpType = fieldName.endsWith('s') || fieldName.toLowerCase().includes('list') 
-                ? `List<${nestedClassName}>` 
-                : nestedClassName;
-            }
-            
-            // Parse nested selection set
-            const nestedProperties = parseSelectionSet(selection.selectionSet, nestedType);
-            
-            // Generate the nested class
-            const nestedClass = generateNestedClass(nestedClassName, nestedProperties);
-            responseClasses.add(nestedClass);
-          }
-          
-          properties.push({
-            name: fieldName,
-            pascalName: pascalFieldName,
-            type: csharpType
-          });
-        }
-      });
-      
-      return properties;
-    };
-    
-    // Helper function to infer C# type from field name (basic heuristics)
-    const inferCSharpTypeFromFieldName = (fieldName) => {
-      // console.log(fieldName);
-      
-      if (fieldName.toLowerCase().includes('id')) return 'string';
-      if (fieldName.toLowerCase().includes('date') || fieldName.toLowerCase().includes('when')) return 'DateTime';
-      if (fieldName.toLowerCase().includes('count') || fieldName.toLowerCase().includes('used') || fieldName.toLowerCase().includes('allotment')) return 'int?';
-      if (fieldName.toLowerCase().includes('by')) return 'string';
-      if (fieldName.toLowerCase().includes('name') || fieldName.toLowerCase().includes('title')) return 'string';
-      return 'string'; // default fallback
-    };
-    
-    // Helper function to generate nested class code
-    const generateNestedClass = (className, properties) => {
-      const classProperties = properties.map(prop => 
-        `        
-        
-        [JsonProperty("${prop.name}")]
-        public ${prop.type} ${prop.pascalName} { get; set; }`
-      ).join('\n');
-      
-      return `    
-    /// <summary>Inner Model</summary> 
-    public sealed class ${className} 
-    {
-        ${classProperties}
-    }`;
-    };
-    
     // Parse the main query operation
     let mainDataProperties = [];
     operationsDefinitions.forEach(op => {
@@ -365,11 +292,10 @@ module.exports = {
                   rootType = schema.getSubscriptionType();
                   break;
               }
-              // console.log(`Using root type for ${node.operation}:`, rootType?.name);
             } catch (error) {
               // console.log('Error getting root type from schema:', error.message);
             }
-            mainDataProperties = parseSelectionSet(node.selectionSet, rootType);
+            mainDataProperties = parseSelectionSet(node.selectionSet, rootType, responseClasses);
           }
         }
       });
@@ -378,7 +304,6 @@ module.exports = {
     // Generate Data class properties
     const dataProperties = mainDataProperties.map(prop => 
       `        
-        
         [JsonProperty("${prop.name}")]
         public ${prop.type} ${prop.pascalName} { get; set; }`
     ).join('\n');
