@@ -1,12 +1,45 @@
-const { visit, Kind, isNonNullType, isListType, getNamedType, typeFromAST } = require('graphql');
-const path = require('path');
+import { 
+  visit, 
+  Kind, 
+  isNonNullType, 
+  isListType, 
+  getNamedType, 
+  typeFromAST,
+  GraphQLSchema,
+  DocumentNode,
+  OperationDefinitionNode,
+  FieldNode,
+  SelectionSetNode,
+  VariableDefinitionNode,
+  GraphQLType,
+  GraphQLObjectType,
+  GraphQLNonNull,
+  GraphQLList,
+  isObjectType,
+  TypeNode
+} from 'graphql';
+import { PluginFunction, Types } from '@graphql-codegen/plugin-helpers'
 
-const toPascalCase = (str) => {
+// Type definitions
+interface Operation {
+  name: string | undefined;
+  type: 'query' | 'mutation' | 'subscription';
+  variables: readonly VariableDefinitionNode[];
+  document: Types.DocumentFile;
+}
+
+interface Property {
+  name: string;
+  pascalName: string;
+  type: string;
+}
+
+const toPascalCase = (str: string): string => {
   if (!str || typeof str !== 'string') return '';
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-const getOperationCSharpClassName = (operation) => {
+const getOperationCSharpClassName = (operation: Operation): string => {
   switch (operation.type) {
     case 'query': return 'Query';
     case 'mutation': return 'Mutation';
@@ -14,25 +47,26 @@ const getOperationCSharpClassName = (operation) => {
   }
 };
 
-const convertGraphQLTypeToCSharp = (input, schema = null) => {
-  let schemaType;
+const convertGraphQLTypeToCSharp = (input: GraphQLType | TypeNode, schema: GraphQLSchema | null = null): string => {
+  let schemaType: GraphQLType;
   
   // Handle both AST types and schema types
-  if (input && typeof input === 'object' && input.kind) {
+  if (input && typeof input === 'object' && 'kind' in input) {
     // This is an AST type, convert to schema type
     if (!schema) {
       throw new Error('Schema is required when converting AST types');
     }
-    schemaType = typeFromAST(schema, input);
+    const convertedType = typeFromAST(schema, input as TypeNode);
     
-    if (!schemaType) {
+    if (!convertedType) {
       // Fallback to old method if conversion fails
-      const typeName = input.kind === 'NamedType' ? input.name.value : 'object';
+      const typeName = input.kind === 'NamedType' ? (input as any).name.value : 'object';
       return toPascalCase(typeName);
     }
+    schemaType = convertedType;
   } else {
     // This is already a schema type
-    schemaType = input;
+    schemaType = input as GraphQLType;
   }
   
   let currentType = schemaType;
@@ -90,9 +124,10 @@ const convertGraphQLTypeToCSharp = (input, schema = null) => {
   return csharpType;
 };
 
-const getOperationsDefinitions = (documents) => {
-  const operations = [];
+const getOperationsDefinitions = (documents: Types.DocumentFile[]): Operation[] => {
+  const operations: Operation[] = [];
   documents.forEach(doc => {
+    if (!doc.document) return;
     visit(doc.document, {
       OperationDefinition: (node) => {
         operations.push({
@@ -109,10 +144,10 @@ const getOperationsDefinitions = (documents) => {
 };
 
 // Helper function to get field type from schema
-const getFieldTypeFromSchema = (parentType, fieldName) => {
+const getFieldTypeFromSchema = (parentType: GraphQLType | null, fieldName: string): GraphQLType | null => {
   try {
-    if (!parentType || !parentType.getFields) {
-      // console.log(`Parent type ${parentType?.name || 'unknown'} has no getFields method`);
+    if (!parentType || !isObjectType(parentType)) {
+      // console.log(`Parent type ${parentType?.toString() || 'unknown'} is not an object type`);
       return null;
     }
     
@@ -125,14 +160,14 @@ const getFieldTypeFromSchema = (parentType, fieldName) => {
     }
     
     return field.type;
-  } catch (error) {
+  } catch (error: any) {
     // console.log(`Error getting field type for ${fieldName}:`, error.message);
     return null;
   }
 };
 
 // Helper function to generate nested class code
-const generateNestedClass = (className, properties) => {
+const generateNestedClass = (className: string, properties: Property[]): string => {
   const classProperties = properties.map(prop => 
     `        
         [JsonProperty("${prop.name}")]
@@ -146,9 +181,9 @@ const generateNestedClass = (className, properties) => {
 };
 
 // Helper function to parse selection set recursively
-const parseSelectionSet = (selectionSet, parentType = null, responseClasses = new Set()) => {
+const parseSelectionSet = (selectionSet: SelectionSetNode | undefined, parentType: GraphQLType | null = null, responseClasses: Set<string> = new Set()): Property[] => {
   if (!selectionSet || !selectionSet.selections) return [];
-  const properties = [];
+  const properties: Property[] = [];
   
   selectionSet.selections.forEach(selection => {
     if (selection.kind === 'Field') {
@@ -214,8 +249,10 @@ const parseSelectionSet = (selectionSet, parentType = null, responseClasses = ne
   return properties;
 };
 
-module.exports = {
-  plugin(schema, documents, config, { outputFile }) {  
+export const plugin: PluginFunction = (
+  schema: GraphQLSchema,
+  documents: Types.DocumentFile[]
+): string => {  
     const operationsDefinitions = getOperationsDefinitions(documents);
     
     if (operationsDefinitions.length === 0) {
@@ -225,7 +262,7 @@ module.exports = {
     const operation = operationsDefinitions[0];
     const operationName = operation.name;
     const variables = operation.variables;
-    const rawQuery = operation.document.rawSDL.replace(/"/g, '""');
+    const rawQuery = (operation.document.rawSDL || '').replace(/"/g, '""');
 
     const operationClassName = getOperationCSharpClassName(operation);
     
@@ -272,25 +309,26 @@ module.exports = {
     }).join(',\n') : '';
 
     // Parse selection set to generate response classes
-    const responseClasses = new Set();
+    const responseClasses = new Set<string>();
     
     // Parse the main query operation
-    let mainDataProperties = [];
+    let mainDataProperties: Property[] = [];
     operationsDefinitions.forEach(op => {
+      if (!op.document.document) return;
       visit(op.document.document, {
         OperationDefinition: (node) => {
           if (node.selectionSet) {
-            let rootType = null;
+            let rootType: GraphQLObjectType | null = null;
             try {
               switch (node.operation) {
                 case 'query':
-                  rootType = schema.getQueryType();
+                  rootType = schema.getQueryType() ?? null;
                   break;
                 case 'mutation':
-                  rootType = schema.getMutationType();
+                  rootType = schema.getMutationType() ?? null;
                   break;
                 case 'subscription':
-                  rootType = schema.getSubscriptionType();
+                  rootType = schema.getSubscriptionType() ?? null;
                   break;
               }
             } catch (error) {
@@ -342,5 +380,4 @@ ${variablesDict}
 ${Array.from(responseClasses).join('\n')}
 }
 `;
-  }
-};
+}

@@ -1,21 +1,12 @@
 overwrite: true
-schema:
-  - "http://booking-query-high-qa.privatecloud.qa.agoda.is":
-      headers:
-        API-Key: "xxx"
-        Client-ID: "xxx"
+schema: "https://smapi-qa-http.privatecloud.qa.agoda.is/v2/graphql"
 generates:
   # Generate C# files for each GraphQL operation
-  ./Agoda.Graphql/BookingQueries/DiscountBreakdown/BookingDiscountsByBookingIds.generated.cs:
+  ./Agoda.Graphql/SupplyApi/Queries/Rooms/GetListRoomByPropertyId.generated.cs:
     documents:
-      - "Agoda.Graphql/BookingQueries/DiscountBreakdown/BookingDiscountsByBookingIds.graphql"
+      - "Agoda.Graphql/SupplyApi/Queries/Rooms/GetListRoomByPropertyId.graphql"
     plugins:
-      - agoda-csharp-codegen
-  # ./Agoda.Graphql/SupplyApi/Queries/Properties/HotelCompetitor.generated.cs:
-  #   documents:
-  #     - "Agoda.Graphql/SupplyApi/Queries/Properties/HotelCompetitor.graphql"
-  #   plugins:
-  #     - agoda-csharp-codegen
+      - "./dist/agoda-csharp-codegen.js"
   # ./Agoda.Graphql/SupplyApi/Queries/Availabilities/GetAvailabilities.generated.cs:
   #   documents:
   #     - "Agoda.Graphql/SupplyApi/Queries/Availabilities/GetAvailabilities.graphql"
