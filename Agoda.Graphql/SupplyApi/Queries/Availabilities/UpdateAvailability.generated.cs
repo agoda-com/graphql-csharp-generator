@@ -35,7 +35,17 @@ namespace Agoda.Graphql.UpdateAvailability
   }
 }";
 
-        public Mutation(int dmcId, string hotelId, string roomTypeId, string userId, DateTime startDate, DateTime endDate, int? regularAllotment, int? guaranteedAllotment, List<int?> dayOfWeek, IResultProcessor<Data> resultProcessor = null) : base(resultProcessor)
+        public int DmcId { get; }
+        public string HotelId { get; }
+        public string RoomTypeId { get; }
+        public string UserId { get; }
+        public DateTime StartDate { get; }
+        public DateTime EndDate { get; }
+        public int? RegularAllotment { get; }
+        public int? GuaranteedAllotment { get; }
+        public List<int>? DayOfWeek { get; }
+
+        public Mutation(int dmcId, string hotelId, string roomTypeId, string userId, DateTime startDate, DateTime endDate, int? regularAllotment, int? guaranteedAllotment, List<int>? dayOfWeek, IResultProcessor<Data> resultProcessor = null) : base(resultProcessor)
         {
             DmcId = dmcId;
             HotelId = hotelId;
@@ -48,15 +58,6 @@ namespace Agoda.Graphql.UpdateAvailability
             DayOfWeek = dayOfWeek;
         }
         
-        public int DmcId { get; }
-        public string HotelId { get; }
-        public string RoomTypeId { get; }
-        public string UserId { get; }
-        public DateTime StartDate { get; }
-        public DateTime EndDate { get; }
-        public int? RegularAllotment { get; }
-        public int? GuaranteedAllotment { get; }
-        public List<int?> DayOfWeek { get; }
         protected override string QueryText => _query;
 
         protected override Dictionary<string, object> Variables => new Dictionary<string, object>

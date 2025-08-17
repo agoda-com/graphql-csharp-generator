@@ -24,87 +24,70 @@ const getOperationsDefinitions = (documents) => {
   return operations;
 };
 
-module.exports = {
-  plugin(schema, documents, config, { outputFile }) {
-    const convertGraphQLTypeToCSharp = (type) => {
-      // console.log('=== Type Conversion Debug ===');
-      // console.log('Input type:', JSON.stringify(type, null, 2));
-      // console.log('Type kind:', type.kind);
-      
-      let currentType = type;
-      let isRequired = false;
-      let isList = false;
-      
-      // Handle NonNullType (required fields marked with !)
-      if (currentType.kind === 'NonNullType') {
-        // console.log('Found NonNullType (required field)');
-        isRequired = true;
-        currentType = currentType.type;
-        console.log(type.type);
-        
-        // console.log('After unwrapping NonNull:', currentType);
-      }
-      
-      // Handle ListType (arrays marked with [])
-      if (currentType.kind === 'ListType') {
-        // console.log('Found ListType (array field)');
-        isList = true;
-        currentType = currentType.type;
-        // console.log('After unwrapping List:', currentType);
-        
-        // Handle NonNullType inside ListType  
-        if (currentType.kind === 'NonNullType') {
-          currentType = currentType.type;
-          // console.log('After unwrapping inner NonNull:', currentType);
-        }
-      }
-      
-      // Get the actual type name
-      let typeName;
-      if (currentType.kind === 'NamedType') {
-        typeName = currentType.name.value;
-      } else {
-        // console.log('Unexpected type structure:', currentType);
-        typeName = 'object'; // fallback
-      }
-      
-      // console.log('Final type name:', typeName);
-      // console.log('isRequired:', isRequired);
-      // console.log('isList:', isList);
-      
-      // Map GraphQL scalar types to C# types
-      let csharpType;
-      switch (typeName) {
-        case 'String': csharpType = 'string'; break;
-        case 'Int': csharpType = 'int'; break;
-        case 'Float': csharpType = 'double'; break;
-        case 'Boolean': csharpType = 'bool'; break;
-        case 'Date': csharpType = 'DateTime'; break;
-        case 'DateTime': csharpType = 'DateTime'; break;
-        case 'ID': csharpType = 'string'; break;
-        default: 
-          // console.log('Unknown type, using PascalCase:', typeName);
-          csharpType = toPascalCase(typeName); 
-          break;
-      }
-      
-      // Handle nullability and lists
-      if (isList) {
-        const innerType = (csharpType === 'string' || isRequired) ? csharpType : `${csharpType}?`;
-        csharpType = `List<${innerType}>`;
-      } else if (!isRequired && csharpType !== 'string') {
-        csharpType += '?';
-      }
-      
-      // console.log('Final C# type:', csharpType);
-      // console.log('=== End Debug ===\n');
-      
-      return csharpType;
-    };
+const getOperationCSharpClassName = (operation) => {
+  switch (operation.type) {
+    case 'query': return 'Query';
+    case 'mutation': return 'Mutation';
+    case 'subscription': return 'Subscription';
+  }
+};
 
-    // Extract operation info from the GraphQL document
-    console.log('documents', documents);
-    
+const convertGraphQLTypeToCSharp = (type) => {
+  let currentType = type;
+  let isRequired = false;
+  let isList = false;
+  let isInnerRequired = false;
+  
+  // Handle NonNullType (required fields marked with !)
+  if (currentType.kind === 'NonNullType') {
+    isRequired = true;
+    currentType = currentType.type;
+  }
+  
+  // Handle ListType (arrays marked with [])
+  if (currentType.kind === 'ListType') {
+    isList = true;
+    currentType = currentType.type;
+    // Handle NonNullType inside ListType  
+    if (currentType.kind === 'NonNullType') {
+      isInnerRequired = true;
+      currentType = currentType.type;
+    }
+  }
+  
+  // Get the actual type name
+  const typeName = currentType.kind === 'NamedType' ? currentType.name.value : 'object';
+  
+  // Map GraphQL scalar types to C# types
+  let csharpType;
+  switch (typeName) {
+    case 'String': csharpType = 'string'; break;
+    case 'Int': csharpType = 'int'; break;
+    case 'BigInt': csharpType = 'long'; break;
+    case 'Long': csharpType = 'long'; break;
+    case 'Float': csharpType = 'double'; break;
+    case 'Boolean': csharpType = 'bool'; break;
+    case 'Date': csharpType = 'DateTime'; break;
+    case 'DateTime': csharpType = 'DateTime'; break;
+    case 'ID': csharpType = 'string'; break;
+    default: 
+      csharpType = toPascalCase(typeName); 
+      break;
+  }
+  
+  // Handle nullability and lists
+  if (isList) {
+    const innerType = (csharpType === 'string' || isInnerRequired) ? csharpType : `${csharpType}?`;
+    csharpType = `List<${innerType}>`;
+    csharpType += isRequired ? '' : '?';
+  } else if (!isRequired && csharpType !== 'string') {
+    csharpType += '?';
+  }
+  return csharpType;
+};
+
+module.exports = {
+  plugin(schema, documents, config, { outputFile }) {  
     const operationsDefinitions = getOperationsDefinitions(documents);
     
     if (operationsDefinitions.length === 0) {
@@ -113,30 +96,22 @@ module.exports = {
 
     const operation = operationsDefinitions[0];
     const operationName = operation.name;
-    const operationType = operation.type;
     const variables = operation.variables;
-    // console.log('variables', variables);
-    
-    // Determine the C# class name based on operation type
-    const operationClassName = operationType === 'mutation' ? 'Mutation' : 'Query';
-    
-    // Extract the raw GraphQL query
-    const rawQuery = operation.document.rawSDL || operation.document.content;
+    const rawQuery = operation.document.rawSDL.replace(/"/g, '""');
+
+    const operationClassName = getOperationCSharpClassName(operation);
     
     // Generate constructor parameters
-    
     const constructorParams = variables.map(variable => {
-      console.log('variable', variable);
-      
       const name = variable.variable.name.value;
-      
       const csharpType = convertGraphQLTypeToCSharp(variable.type);
       return `${csharpType} ${name}`;
     });
     
-    // Add the result processor parameter
-    constructorParams.push('IResultProcessor<Data> resultProcessor = null');
-    const constructorParamsString = constructorParams.join(', ');
+    const constructorParamsString = [
+      ...constructorParams,
+      'IResultProcessor<Data> resultProcessor = null'
+    ].join(', ');
     
     // Generate constructor body (property assignments)
     const constructorBody = variables.map(variable => {
@@ -146,7 +121,7 @@ module.exports = {
     }).join('\n');
     
     // Generate properties
-    const properties = variables.map(variable => {
+    const declareProperties = variables.map(variable => {
       const name = variable.variable.name.value;
       const csharpType = convertGraphQLTypeToCSharp(variable.type);
       const pascalName = toPascalCase(name);
@@ -422,14 +397,15 @@ namespace Agoda.Graphql.${operationName}
 {
     public partial class ${operationClassName} : QueryBase<Data>
     {
-        private const string _query = @"${rawQuery.replace(/"/g, '""')}";
+        private const string _query = @"${rawQuery}";
+
+${declareProperties}
 
         public ${operationClassName}(${constructorParamsString}) : base(resultProcessor)
         {
 ${constructorBody}
         }
         
-${properties}
         protected override string QueryText => _query;
 
         protected override Dictionary<string, object> Variables => new Dictionary<string, object>

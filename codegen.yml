@@ -6,7 +6,7 @@ generates:
     documents:
       - "Agoda.Graphql/SupplyApi/Queries/Availabilities/UpdateAvailability.graphql"
     plugins:
-      - ./agoda-csharp-codegen.js
+      - agoda-csharp-codegen
   # ./Agoda.Graphql/SupplyApi/Queries/Availabilities/GetAvailabilities.generated.cs:
   #   documents:
   #     - "Agoda.Graphql/SupplyApi/Queries/Availabilities/GetAvailabilities.graphql"
