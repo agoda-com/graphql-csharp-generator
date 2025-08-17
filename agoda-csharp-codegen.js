@@ -6,14 +6,30 @@ const toPascalCase = (str) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
+const getOperationsDefinitions = (documents) => {
+  const operations = [];
+  documents.forEach(doc => {
+    visit(doc.document, {
+      OperationDefinition: (node) => {
+        operations.push({
+          name: node.name?.value,
+          type: node.operation,
+          variables: node.variableDefinitions || [],
+          document: doc
+        });
+      }
+    });
+  });
+  
+  return operations;
+};
+
 module.exports = {
   plugin(schema, documents, config, { outputFile }) {
-    // Helper functions
-    
     const convertGraphQLTypeToCSharp = (type) => {
-      console.log('=== Type Conversion Debug ===');
-      console.log('Input type:', JSON.stringify(type, null, 2));
-      console.log('Type kind:', type.kind);
+      // console.log('=== Type Conversion Debug ===');
+      // console.log('Input type:', JSON.stringify(type, null, 2));
+      // console.log('Type kind:', type.kind);
       
       let currentType = type;
       let isRequired = false;
@@ -21,23 +37,25 @@ module.exports = {
       
       // Handle NonNullType (required fields marked with !)
       if (currentType.kind === 'NonNullType') {
-        console.log('Found NonNullType (required field)');
+        // console.log('Found NonNullType (required field)');
         isRequired = true;
         currentType = currentType.type;
-        console.log('After unwrapping NonNull:', currentType);
+        console.log(type.type);
+        
+        // console.log('After unwrapping NonNull:', currentType);
       }
       
       // Handle ListType (arrays marked with [])
       if (currentType.kind === 'ListType') {
-        console.log('Found ListType (array field)');
+        // console.log('Found ListType (array field)');
         isList = true;
         currentType = currentType.type;
-        console.log('After unwrapping List:', currentType);
+        // console.log('After unwrapping List:', currentType);
         
         // Handle NonNullType inside ListType  
         if (currentType.kind === 'NonNullType') {
           currentType = currentType.type;
-          console.log('After unwrapping inner NonNull:', currentType);
+          // console.log('After unwrapping inner NonNull:', currentType);
         }
       }
       
@@ -46,13 +64,13 @@ module.exports = {
       if (currentType.kind === 'NamedType') {
         typeName = currentType.name.value;
       } else {
-        console.log('Unexpected type structure:', currentType);
+        // console.log('Unexpected type structure:', currentType);
         typeName = 'object'; // fallback
       }
       
-      console.log('Final type name:', typeName);
-      console.log('isRequired:', isRequired);
-      console.log('isList:', isList);
+      // console.log('Final type name:', typeName);
+      // console.log('isRequired:', isRequired);
+      // console.log('isList:', isList);
       
       // Map GraphQL scalar types to C# types
       let csharpType;
@@ -65,7 +83,7 @@ module.exports = {
         case 'DateTime': csharpType = 'DateTime'; break;
         case 'ID': csharpType = 'string'; break;
         default: 
-          console.log('Unknown type, using PascalCase:', typeName);
+          // console.log('Unknown type, using PascalCase:', typeName);
           csharpType = toPascalCase(typeName); 
           break;
       }
@@ -78,36 +96,26 @@ module.exports = {
         csharpType += '?';
       }
       
-      console.log('Final C# type:', csharpType);
-      console.log('=== End Debug ===\n');
+      // console.log('Final C# type:', csharpType);
+      // console.log('=== End Debug ===\n');
       
       return csharpType;
     };
 
     // Extract operation info from the GraphQL document
-    const operations = [];
+    console.log('documents', documents);
     
-    documents.forEach(doc => {
-      visit(doc.document, {
-        OperationDefinition: (node) => {
-          operations.push({
-            name: node.name?.value,
-            type: node.operation,
-            variables: node.variableDefinitions || [],
-            document: doc
-          });
-        }
-      });
-    });
-
-    if (operations.length === 0) {
+    const operationsDefinitions = getOperationsDefinitions(documents);
+    
+    if (operationsDefinitions.length === 0) {
       return 'No operations found';
     }
 
-    const operation = operations[0];
+    const operation = operationsDefinitions[0];
     const operationName = operation.name;
     const operationType = operation.type;
     const variables = operation.variables;
+    // console.log('variables', variables);
     
     // Determine the C# class name based on operation type
     const operationClassName = operationType === 'mutation' ? 'Mutation' : 'Query';
@@ -118,6 +126,8 @@ module.exports = {
     // Generate constructor parameters
     
     const constructorParams = variables.map(variable => {
+      console.log('variable', variable);
+      
       const name = variable.variable.name.value;
       
       const csharpType = convertGraphQLTypeToCSharp(variable.type);
@@ -166,7 +176,7 @@ module.exports = {
     const getFieldTypeFromSchema = (parentType, fieldName) => {
       try {
         if (!parentType || !parentType.getFields) {
-          console.log(`Parent type ${parentType?.name || 'unknown'} has no getFields method`);
+          // console.log(`Parent type ${parentType?.name || 'unknown'} has no getFields method`);
           return null;
         }
         
@@ -174,21 +184,21 @@ module.exports = {
         const field = fields[fieldName];
         
         if (!field) {
-          console.log(`Field ${fieldName} not found in type ${parentType.name}`);
+          // console.log(`Field ${fieldName} not found in type ${parentType.name}`);
           return null;
         }
         
-        console.log(`Found field ${fieldName} in ${parentType.name}:`, field.type);
+        // console.log(`Found field ${fieldName} in ${parentType.name}:`, field.type);
         return field.type;
       } catch (error) {
-        console.log(`Error getting field type for ${fieldName}:`, error.message);
+        // console.log(`Error getting field type for ${fieldName}:`, error.message);
         return null;
       }
     };
     
     // Helper function to convert GraphQL schema types directly to C#
     const convertGraphQLTypeFromSchema = (graphqlType) => {
-      console.log('Converting schema type:', graphqlType.toString());
+      // console.log('Converting schema type:', graphqlType.toString());
       
       let currentType = graphqlType;
       let isRequired = false;
@@ -215,12 +225,12 @@ module.exports = {
       const namedType = getNamedType(currentType);
       const typeName = namedType.name;
       
-      console.log('Schema type details:', {
-        originalType: graphqlType.toString(),
-        typeName,
-        isRequired,
-        isList
-      });
+      // console.log('Schema type details:', {
+      //   originalType: graphqlType.toString(),
+      //   typeName,
+      //   isRequired,
+      //   isList
+      // });
       
       // Map GraphQL types to C#
       let csharpType;
@@ -246,7 +256,7 @@ module.exports = {
         csharpType += '?';
       }
       
-      console.log('Final C# type from schema:', csharpType);
+      // console.log('Final C# type from schema:', csharpType);
       return csharpType;
     };
     
@@ -257,7 +267,7 @@ module.exports = {
       const properties = [];
       
       selectionSet.selections.forEach(selection => {
-        console.log("selection", selection);
+        // console.log("selection", selection);
         
         if (selection.kind === 'Field') {
           const fieldName = selection.name.value;
@@ -289,7 +299,7 @@ module.exports = {
             let nestedType = null;
             if (fieldType) {
               nestedType = getNamedType(fieldType);
-              console.log(`Nested type for ${fieldName}:`, nestedType?.name);
+              // console.log(`Nested type for ${fieldName}:`, nestedType?.name);
             }
             
             // Determine if it's a list and set the correct C# type
@@ -336,7 +346,7 @@ module.exports = {
     
     // Helper function to infer C# type from field name (basic heuristics)
     const inferCSharpTypeFromFieldName = (fieldName) => {
-      console.log(fieldName);
+      // console.log(fieldName);
       
       if (fieldName.toLowerCase().includes('id')) return 'string';
       if (fieldName.toLowerCase().includes('date') || fieldName.toLowerCase().includes('when')) return 'DateTime';
@@ -365,7 +375,7 @@ module.exports = {
     
     // Parse the main query operation
     let mainDataProperties = [];
-    operations.forEach(op => {
+    operationsDefinitions.forEach(op => {
       visit(op.document.document, {
         OperationDefinition: (node) => {
           if (node.selectionSet) {
@@ -383,9 +393,9 @@ module.exports = {
                   rootType = schema.getSubscriptionType();
                   break;
               }
-              console.log(`Using root type for ${node.operation}:`, rootType?.name);
+              // console.log(`Using root type for ${node.operation}:`, rootType?.name);
             } catch (error) {
-              console.log('Error getting root type from schema:', error.message);
+              // console.log('Error getting root type from schema:', error.message);
             }
             
             mainDataProperties = parseSelectionSet(node.selectionSet, 'Root', rootType);

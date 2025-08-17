@@ -6,9 +6,9 @@ generates:
     documents:
       - "Agoda.Graphql/SupplyApi/Queries/Availabilities/UpdateAvailability.graphql"
     plugins:
-      - ./my-plugin.js
-  ./Agoda.Graphql/SupplyApi/Queries/Availabilities/GetAvailabilities.generated.cs:
-    documents:
-      - "Agoda.Graphql/SupplyApi/Queries/Availabilities/GetAvailabilities.graphql"
-    plugins:
-      - ./my-plugin.js
+      - ./agoda-csharp-codegen.js
+  # ./Agoda.Graphql/SupplyApi/Queries/Availabilities/GetAvailabilities.generated.cs:
+  #   documents:
+  #     - "Agoda.Graphql/SupplyApi/Queries/Availabilities/GetAvailabilities.graphql"
+  #   plugins:
+  #     - ./agoda-csharp-codegen.js
