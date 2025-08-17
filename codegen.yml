@@ -2,9 +2,9 @@ overwrite: true
 schema: "https://smapi-qa-http.privatecloud.qa.agoda.is/v2/graphql"
 generates:
   # Generate C# files for each GraphQL operation
-  ./Agoda.Graphql/SupplyApi/Queries/Availabilities/UpdateAvailability.generated.cs:
+  ./Agoda.Graphql/SupplyApi/Queries/Rooms/GetRoomById.generated.cs:
     documents:
-      - "Agoda.Graphql/SupplyApi/Queries/Availabilities/UpdateAvailability.graphql"
+      - "Agoda.Graphql/SupplyApi/Queries/Rooms/GetRoomById.graphql"
     plugins:
       - agoda-csharp-codegen
   # ./Agoda.Graphql/SupplyApi/Queries/Availabilities/GetAvailabilities.generated.cs:

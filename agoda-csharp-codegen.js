@@ -1,27 +1,9 @@
-const { visit, Kind, isNonNullType, isListType, getNamedType } = require('graphql');
+const { visit, Kind, isNonNullType, isListType, getNamedType, typeFromAST } = require('graphql');
 const path = require('path');
 
 const toPascalCase = (str) => {
   if (!str || typeof str !== 'string') return '';
   return str.charAt(0).toUpperCase() + str.slice(1);
-};
-
-const getOperationsDefinitions = (documents) => {
-  const operations = [];
-  documents.forEach(doc => {
-    visit(doc.document, {
-      OperationDefinition: (node) => {
-        operations.push({
-          name: node.name?.value,
-          type: node.operation,
-          variables: node.variableDefinitions || [],
-          document: doc
-        });
-      }
-    });
-  });
-  
-  return operations;
 };
 
 const getOperationCSharpClassName = (operation) => {
@@ -32,31 +14,40 @@ const getOperationCSharpClassName = (operation) => {
   }
 };
 
-const convertGraphQLTypeToCSharp = (type) => {
-  let currentType = type;
+const convertGraphQLTypeToCSharp = (astType, schema) => {
+  const schemaType = typeFromAST(schema, astType);
+  
+  if (!schemaType) {
+    // Fallback to old method if conversion fails
+    const typeName = astType.kind === 'NamedType' ? astType.name.value : 'object';
+    return toPascalCase(typeName);
+  }
+  
+  // Now use the schema-based conversion (same logic as convertSchemaTypeToCSharp)
+  let currentType = schemaType;
   let isRequired = false;
   let isList = false;
   let isInnerRequired = false;
   
-  // Handle NonNullType (required fields marked with !)
-  if (currentType.kind === 'NonNullType') {
+  // Handle NonNull types (required fields marked with !)
+  if (isNonNullType(currentType)) {
     isRequired = true;
-    currentType = currentType.type;
+    currentType = currentType.ofType;
   }
   
-  // Handle ListType (arrays marked with [])
-  if (currentType.kind === 'ListType') {
+  // Handle List types (arrays marked with [])
+  if (isListType(currentType)) {
     isList = true;
-    currentType = currentType.type;
-    // Handle NonNullType inside ListType  
-    if (currentType.kind === 'NonNullType') {
+    currentType = currentType.ofType;
+    
+    // Handle NonNull inside List
+    if (isNonNullType(currentType)) {
       isInnerRequired = true;
-      currentType = currentType.type;
+      currentType = currentType.ofType;
     }
   }
   
-  // Get the actual type name
-  const typeName = currentType.kind === 'NamedType' ? currentType.name.value : 'object';
+  const typeName = getNamedType(currentType).name;
   
   // Map GraphQL scalar types to C# types
   let csharpType;
@@ -83,7 +74,26 @@ const convertGraphQLTypeToCSharp = (type) => {
   } else if (!isRequired && csharpType !== 'string') {
     csharpType += '?';
   }
+  
   return csharpType;
+};
+
+const getOperationsDefinitions = (documents) => {
+  const operations = [];
+  documents.forEach(doc => {
+    visit(doc.document, {
+      OperationDefinition: (node) => {
+        operations.push({
+          name: node.name?.value,
+          type: node.operation,
+          variables: node.variableDefinitions || [],
+          document: doc,
+        });
+      }
+    });
+  });
+  
+  return operations;
 };
 
 module.exports = {
@@ -104,7 +114,7 @@ module.exports = {
     // Generate constructor parameters
     const constructorParams = variables.map(variable => {
       const name = variable.variable.name.value;
-      const csharpType = convertGraphQLTypeToCSharp(variable.type);
+      const csharpType = convertGraphQLTypeToCSharp(variable.type, schema);
       return `${csharpType} ${name}`;
     });
     
@@ -123,7 +133,7 @@ module.exports = {
     // Generate properties
     const declareProperties = variables.map(variable => {
       const name = variable.variable.name.value;
-      const csharpType = convertGraphQLTypeToCSharp(variable.type);
+      const csharpType = convertGraphQLTypeToCSharp(variable.type, schema);
       const pascalName = toPascalCase(name);
       return `        public ${csharpType} ${pascalName} { get; }`;
     }).join('\n');
@@ -132,7 +142,7 @@ module.exports = {
     const variablesDict = variables.length > 0 ? variables.map(variable => {
       const name = variable.variable.name.value;
       const pascalName = toPascalCase(name);
-      const csharpType = convertGraphQLTypeToCSharp(variable.type);
+      const csharpType = convertGraphQLTypeToCSharp(variable.type, schema);
       
       // Handle DateTime formatting for Date types
       let value = pascalName;
@@ -145,7 +155,6 @@ module.exports = {
 
     // Parse selection set to generate response classes
     const responseClasses = new Set();
-    const dataClassProperties = [];
     
     // Helper function to get field type from schema
     const getFieldTypeFromSchema = (parentType, fieldName) => {
@@ -163,7 +172,6 @@ module.exports = {
           return null;
         }
         
-        // console.log(`Found field ${fieldName} in ${parentType.name}:`, field.type);
         return field.type;
       } catch (error) {
         // console.log(`Error getting field type for ${fieldName}:`, error.message);
@@ -172,7 +180,7 @@ module.exports = {
     };
     
     // Helper function to convert GraphQL schema types directly to C#
-    const convertGraphQLTypeFromSchema = (graphqlType) => {
+    const convertSchemaTypeToCSharp = (graphqlType) => {
       // console.log('Converting schema type:', graphqlType.toString());
       
       let currentType = graphqlType;
@@ -199,13 +207,6 @@ module.exports = {
       // Get the named type
       const namedType = getNamedType(currentType);
       const typeName = namedType.name;
-      
-      // console.log('Schema type details:', {
-      //   originalType: graphqlType.toString(),
-      //   typeName,
-      //   isRequired,
-      //   isList
-      // });
       
       // Map GraphQL types to C#
       let csharpType;
@@ -236,14 +237,11 @@ module.exports = {
     };
     
     // Helper function to parse selection set recursively
-    const parseSelectionSet = (selectionSet, parentTypeName = null, parentType = null) => {
+    const parseSelectionSet = (selectionSet, parentType = null) => {
       if (!selectionSet || !selectionSet.selections) return [];
-      
       const properties = [];
       
       selectionSet.selections.forEach(selection => {
-        // console.log("selection", selection);
-        
         if (selection.kind === 'Field') {
           const fieldName = selection.name.value;
           const pascalFieldName = toPascalCase(fieldName);
@@ -255,8 +253,8 @@ module.exports = {
           if (parentType) {
             fieldType = getFieldTypeFromSchema(parentType, fieldName);
             if (fieldType) {
-              // Convert the actual GraphQL type to C# using our existing function
-              csharpType = convertGraphQLTypeFromSchema(fieldType);
+              // Convert the actual GraphQL schema type to C#
+              csharpType = convertSchemaTypeToCSharp(fieldType);
             } else {
               // Fallback to field name inference
               csharpType = inferCSharpTypeFromFieldName(fieldName);
@@ -301,7 +299,7 @@ module.exports = {
             }
             
             // Parse nested selection set
-            const nestedProperties = parseSelectionSet(selection.selectionSet, nestedClassName, nestedType);
+            const nestedProperties = parseSelectionSet(selection.selectionSet, nestedType);
             
             // Generate the nested class
             const nestedClass = generateNestedClass(nestedClassName, nestedProperties);
@@ -354,7 +352,6 @@ module.exports = {
       visit(op.document.document, {
         OperationDefinition: (node) => {
           if (node.selectionSet) {
-            // Get the root operation type from schema
             let rootType = null;
             try {
               switch (node.operation) {
@@ -372,8 +369,7 @@ module.exports = {
             } catch (error) {
               // console.log('Error getting root type from schema:', error.message);
             }
-            
-            mainDataProperties = parseSelectionSet(node.selectionSet, 'Root', rootType);
+            mainDataProperties = parseSelectionSet(node.selectionSet, rootType);
           }
         }
       });

@@ -78,7 +78,7 @@ namespace Agoda.Graphql.UpdateAvailability
     {        
         
         [JsonProperty("AvailabilityMutation")]
-        public List<AvailabilityMutation> AvailabilityMutation { get; set; }
+        public AvailabilityMutation AvailabilityMutation { get; set; }
     }
     
     /// <summary>Inner Model</summary> 
@@ -111,7 +111,7 @@ namespace Agoda.Graphql.UpdateAvailability
         
         
         [JsonProperty("dmcId")]
-        public int DmcId { get; set; }
+        public string DmcId { get; set; }
         
         
         [JsonProperty("roomId")]
@@ -127,7 +127,7 @@ namespace Agoda.Graphql.UpdateAvailability
         
         
         [JsonProperty("modifiedWhen")]
-        public DateTime? ModifiedWhen { get; set; }
+        public DateTime ModifiedWhen { get; set; }
         
         
         [JsonProperty("modifiedBy")]

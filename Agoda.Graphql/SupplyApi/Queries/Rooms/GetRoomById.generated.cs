@@ -19,14 +19,15 @@ namespace Agoda.Graphql.GetRoomById
   }
 }";
 
+        public int RoomTypeId { get; }
+        public bool? FetchFromCdb { get; }
+
         public Query(int roomTypeId, bool? fetchFromCdb, IResultProcessor<Data> resultProcessor = null) : base(resultProcessor)
         {
             RoomTypeId = roomTypeId;
             FetchFromCdb = fetchFromCdb;
         }
         
-        public int RoomTypeId { get; }
-        public bool? FetchFromCdb { get; }
         protected override string QueryText => _query;
 
         protected override Dictionary<string, object> Variables => new Dictionary<string, object>
