@@ -134,14 +134,14 @@ const getFieldTypeFromSchema = (parentType, fieldName) => {
 const generateNestedClass = (className, properties) => {
   const classProperties = properties.map(prop => 
     `        
-    [JsonProperty("${prop.name}")]
-    public ${prop.type} ${prop.pascalName} { get; set; }`
+        [JsonProperty("${prop.name}")]
+        public ${prop.type} ${prop.pascalName} { get; set; }`
   ).join('\n');
   
   return `    
-  public sealed class ${className} 
-  {${classProperties}
-  }`;
+    public sealed class ${className} 
+    {${classProperties}
+    }`;
 };
 
 // Helper function to parse selection set recursively
