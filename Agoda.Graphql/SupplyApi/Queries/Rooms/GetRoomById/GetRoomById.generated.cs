@@ -4,9 +4,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Agoda.Graphql;
 
-namespace Agoda.Graphql.GetRoomById
+namespace Agoda.Graphql.SupplyApi.Queries.Rooms.GetRoomById
 {
-    public partial class Query : QueryBase<Data>
+    public class Query : QueryBase<Data>
     {
         private const string _query = @"query GetRoomById($roomTypeId: Int!, $fetchFromCdb: Boolean) {
   Room(roomTypeID: $roomTypeId, fetchFromCDB: $fetchFromCdb) {
@@ -39,35 +39,26 @@ namespace Agoda.Graphql.GetRoomById
 
     public sealed class Data
     {        
-        
         [JsonProperty("Room")]
         public Room Room { get; set; }
     }
     
-    /// <summary>Inner Model</summary> 
     public sealed class Room 
-    {
-                
-        
+    {        
         [JsonProperty("id")]
         public int Id { get; set; }
-        
         
         [JsonProperty("dmcRoomId")]
         public string DmcRoomId { get; set; }
         
-        
         [JsonProperty("allotmentAutoTopup")]
         public int? AllotmentAutoTopup { get; set; }
-        
         
         [JsonProperty("noOfRoom")]
         public int? NoOfRoom { get; set; }
         
-        
         [JsonProperty("hotelRoomTypeId")]
         public int HotelRoomTypeId { get; set; }
-        
         
         [JsonProperty("inventoryTypeId")]
         public int? InventoryTypeId { get; set; }

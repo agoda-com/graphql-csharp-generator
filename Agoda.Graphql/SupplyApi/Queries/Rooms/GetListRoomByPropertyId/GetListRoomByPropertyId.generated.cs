@@ -4,11 +4,11 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Agoda.Graphql;
 
-namespace Agoda.Graphql.GetListRoomByPropertyId
+namespace Agoda.Graphql.SupplyApi.Queries.Rooms.GetListRoomByPropertyId
 {
-    public partial class Query : QueryBase<Data>
+    public class Query : QueryBase<Data>
     {
-        private const string _query = @"query GetListRoomByPropertyId($hotelId: Int!, $recStatusCore: String!, $recStatusYcs: String!) {
+        private const string _query = @"query getList($hotelId: Int!, $recStatusCore: String!, $recStatusYcs: String!) {
   RoomsByPropertyAndRecStatus(
     propertyId: $hotelId
     recStatusCore: $recStatusCore

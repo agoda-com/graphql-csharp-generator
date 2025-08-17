@@ -20,6 +20,11 @@ import {
 } from 'graphql';
 import { PluginFunction, Types } from '@graphql-codegen/plugin-helpers'
 
+// Plugin configuration interface
+interface AgodaCSharpCodegenConfig {
+  namespace?: string;
+}
+
 // Type definitions
 interface Operation {
   name: string | undefined;
@@ -249,10 +254,15 @@ const parseSelectionSet = (selectionSet: SelectionSetNode | undefined, parentTyp
   return properties;
 };
 
-export const plugin: PluginFunction = (
+export const plugin: PluginFunction<AgodaCSharpCodegenConfig> = (
   schema: GraphQLSchema,
-  documents: Types.DocumentFile[]
-): string => {  
+  documents: Types.DocumentFile[],
+  config: AgodaCSharpCodegenConfig
+): string => {
+    if (!config.namespace) {
+      throw new Error('namespace is required');
+    }
+
     const operationsDefinitions = getOperationsDefinitions(documents);
     
     if (operationsDefinitions.length === 0) {
@@ -265,6 +275,7 @@ export const plugin: PluginFunction = (
     const rawQuery = (operation.document.rawSDL || '').replace(/"/g, '""');
 
     const operationClassName = getOperationCSharpClassName(operation);
+    const namespace = config.namespace;
     
     // Generate constructor parameters
     const constructorParams = variables.map(variable => {
@@ -353,9 +364,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Agoda.Graphql;
 
-namespace Agoda.Graphql.${operationName}
+namespace ${namespace}
 {
-    public partial class ${operationClassName} : QueryBase<Data>
+    public class ${operationClassName} : QueryBase<Data>
     {
         private const string _query = @"${rawQuery}";
 

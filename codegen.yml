@@ -1,14 +1,24 @@
 overwrite: true
 schema: "https://smapi-qa-http.privatecloud.qa.agoda.is/v2/graphql"
 generates:
-  # Generate C# files for each GraphQL operation
-  ./Agoda.Graphql/SupplyApi/Queries/Rooms/GetListRoomByPropertyId.generated.cs:
+  ./Agoda.Graphql/SupplyApi/Queries/Rooms/GetListRoomByPropertyId/GetListRoomByPropertyId.generated.cs:
     documents:
-      - "Agoda.Graphql/SupplyApi/Queries/Rooms/GetListRoomByPropertyId.graphql"
+      - "Agoda.Graphql/SupplyApi/Queries/Rooms/GetListRoomByPropertyId/GetListRoomByPropertyId.graphql"
     plugins:
       - "./dist/agoda-csharp-codegen.js"
-  # ./Agoda.Graphql/SupplyApi/Queries/Availabilities/GetAvailabilities.generated.cs:
-  #   documents:
-  #     - "Agoda.Graphql/SupplyApi/Queries/Availabilities/GetAvailabilities.graphql"
-  #   plugins:
-  #     - ./agoda-csharp-codegen.js
+    config:
+      namespace: "Agoda.Graphql.SupplyApi.Queries.Rooms.GetListRoomByPropertyId"
+  ./Agoda.Graphql/SupplyApi/Queries/Rooms/GetObjectExternalData/GetObjectExternalData.generated.cs:
+    documents:
+      - "Agoda.Graphql/SupplyApi/Queries/Rooms/GetObjectExternalData/GetObjectExternalData.graphql"
+    plugins:
+      - "./dist/agoda-csharp-codegen.js"
+    config:
+      namespace: "Agoda.Graphql.SupplyApi.Queries.Rooms.GetObjectExternalData"
+  ./Agoda.Graphql/SupplyApi/Queries/Rooms/GetRoomById/GetRoomById.generated.cs:
+    documents:
+      - "Agoda.Graphql/SupplyApi/Queries/Rooms/GetRoomById/GetRoomById.graphql"
+    plugins:
+      - "./dist/agoda-csharp-codegen.js"
+    config:
+      namespace: "Agoda.Graphql.SupplyApi.Queries.Rooms.GetRoomById"
