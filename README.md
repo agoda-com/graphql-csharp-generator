@@ -1,20 +1,14 @@
-# graphql-csharp-generator
+# agoda-graphql-csharp-generator
+## it's graphql plugin. it will work together with -> https://the-guild.dev/graphql/codegen/docs/getting-started
 
 ## installation
 ```node
-npm install -g agoda-graphql-csharp-generator
+npm install agoda-graphql-csharp-generator @graphql-codegen/cli graphql
 ```
 
 ## how to use
-```bash
-graphql-csharp-generator --schema-url '$graphqlUrl' --graphql-dir '$rawGraphqlDirectory'
-```
-- example
-```bash
-graphql-csharp-generator --schema-url 'https://smapi-qa-http.privatecloud.qa.agoda.is/v2/graphql' --graphql-dir './Agoda.Graphql/SupplyApi'
-```
-`--graphql-dir` directory that you pass here, it will be the namespace for generated csharp file ⚠️⚠️⚠️
-
+- create codegen config -> https://the-guild.dev/graphql/codegen/docs/config-reference/codegen-config
+- use plugin -> `agoda-graphql-csharp-generator`
 
 # Notes:
 - automate job to update semver version
