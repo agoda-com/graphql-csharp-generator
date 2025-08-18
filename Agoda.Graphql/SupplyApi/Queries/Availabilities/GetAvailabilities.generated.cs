@@ -4,9 +4,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Agoda.Graphql;
 
-namespace Agoda.Graphql.GetAvailabilities
+namespace Agoda.Graphql.SupplyApi.Queries.Availabilities
 {
-    public partial class Query : QueryBase<Data>
+    public class Query : QueryBase<Data>
     {
         private const string _query = @"query GetAvailabilities($propertyId: String!, $dmcId: Int!, $roomTypeId: String, $startDate: Date!, $endDate: Date!) {
   Availabilities(
@@ -31,6 +31,12 @@ namespace Agoda.Graphql.GetAvailabilities
   }
 }";
 
+        public string PropertyId { get; }
+        public int DmcId { get; }
+        public string RoomTypeId { get; }
+        public DateTime StartDate { get; }
+        public DateTime EndDate { get; }
+
         public Query(string propertyId, int dmcId, string roomTypeId, DateTime startDate, DateTime endDate, IResultProcessor<Data> resultProcessor = null) : base(resultProcessor)
         {
             PropertyId = propertyId;
@@ -40,11 +46,6 @@ namespace Agoda.Graphql.GetAvailabilities
             EndDate = endDate;
         }
         
-        public string PropertyId { get; }
-        public int DmcId { get; }
-        public string RoomTypeId { get; }
-        public DateTime StartDate { get; }
-        public DateTime EndDate { get; }
         protected override string QueryText => _query;
 
         protected override Dictionary<string, object> Variables => new Dictionary<string, object>
@@ -59,59 +60,44 @@ namespace Agoda.Graphql.GetAvailabilities
 
     public sealed class Data
     {        
-        
         [JsonProperty("Availabilities")]
         public List<Availabilities> Availabilities { get; set; }
     }
     
-    /// <summary>Inner Model</summary> 
     public sealed class Availabilities 
-    {
-                
-        
+    {        
         [JsonProperty("propertyId")]
         public string PropertyId { get; set; }
-        
         
         [JsonProperty("roomId")]
         public string RoomId { get; set; }
         
-        
         [JsonProperty("dmcId")]
         public int DmcId { get; set; }
-        
         
         [JsonProperty("date")]
         public DateTime Date { get; set; }
         
-        
         [JsonProperty("regularAllotment")]
         public int? RegularAllotment { get; set; }
-        
         
         [JsonProperty("regularAllotmentUsed")]
         public int? RegularAllotmentUsed { get; set; }
         
-        
         [JsonProperty("guaranteedAllotment")]
         public int? GuaranteedAllotment { get; set; }
-        
         
         [JsonProperty("guaranteedAllotmentUsed")]
         public int? GuaranteedAllotmentUsed { get; set; }
         
-        
         [JsonProperty("createdBy")]
         public string CreatedBy { get; set; }
-        
         
         [JsonProperty("createdWhen")]
         public DateTime CreatedWhen { get; set; }
         
-        
         [JsonProperty("modifiedBy")]
         public string ModifiedBy { get; set; }
-        
         
         [JsonProperty("modifiedWhen")]
         public DateTime? ModifiedWhen { get; set; }

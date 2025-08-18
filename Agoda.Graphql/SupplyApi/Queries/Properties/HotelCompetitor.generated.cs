@@ -4,9 +4,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Agoda.Graphql;
 
-namespace Agoda.Graphql.HotelCompetitorByHotelId
+namespace Agoda.Graphql.SupplyApi.Queries.Properties
 {
-    public partial class Query : QueryBase<Data>
+    public class Query : QueryBase<Data>
     {
         private const string _query = @"query HotelCompetitorByHotelId($id: Int!, $languageId: Int!) {
   HotelCompetitorByHotelId(id: $id) {
