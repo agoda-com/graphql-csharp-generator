@@ -13,3 +13,11 @@ npm install agoda-graphql-csharp-generator @graphql-codegen/cli graphql
 # Notes:
 - automate job to update semver version
 - automate job to create release and tags
+
+
+TODO:
+- create script to generate codegen.yml that accept
+```
+--schema-url 'https://smapi-qa-http.privatecloud.qa.agoda.is/v2/graphql' --graphql-dir '../../src/Agoda.SupplyReporting.GraphQl/SupplyApi/Queries/DMCs' --graphql-project 'Agoda.SupplyReporting.GraphQl' --output-name
+```
+- in target project just run with gql-gen
