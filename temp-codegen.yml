@@ -1,0 +1,45 @@
+overwrite: true
+schema: "https://smapi-qa-http.privatecloud.qa.agoda.is/v2/graphql"
+generates:
+    Agoda.Graphql/SupplyApi/Queries/Availabilities/GetAvailabilities/GetAvailabilities.generated.cs:
+        documents:
+            - "Agoda.Graphql/SupplyApi/Queries/Availabilities/GetAvailabilities/GetAvailabilities.graphql"
+        plugins:
+            - "dist/agoda-csharp-codegen.js"
+        config:
+            namespace: "Agoda.Graphql.SupplyApi.Queries.Availabilities.GetAvailabilities"
+    Agoda.Graphql/SupplyApi/Queries/Availabilities/UpdateAvailability.generated.cs:
+        documents:
+            - "Agoda.Graphql/SupplyApi/Queries/Availabilities/UpdateAvailability.graphql"
+        plugins:
+            - "dist/agoda-csharp-codegen.js"
+        config:
+            namespace: "Agoda.Graphql.SupplyApi.Queries.Availabilities"
+    Agoda.Graphql/SupplyApi/Queries/Properties/HotelCompetitor.generated.cs:
+        documents:
+            - "Agoda.Graphql/SupplyApi/Queries/Properties/HotelCompetitor.graphql"
+        plugins:
+            - "dist/agoda-csharp-codegen.js"
+        config:
+            namespace: "Agoda.Graphql.SupplyApi.Queries.Properties"
+    Agoda.Graphql/SupplyApi/Queries/Rooms/GetListRoomByPropertyId/GetListRoomByPropertyId.generated.cs:
+        documents:
+            - "Agoda.Graphql/SupplyApi/Queries/Rooms/GetListRoomByPropertyId/GetListRoomByPropertyId.graphql"
+        plugins:
+            - "dist/agoda-csharp-codegen.js"
+        config:
+            namespace: "Agoda.Graphql.SupplyApi.Queries.Rooms.GetListRoomByPropertyId"
+    Agoda.Graphql/SupplyApi/Queries/Rooms/GetObjectExternalData/GetObjectExternalData.generated.cs:
+        documents:
+            - "Agoda.Graphql/SupplyApi/Queries/Rooms/GetObjectExternalData/GetObjectExternalData.graphql"
+        plugins:
+            - "dist/agoda-csharp-codegen.js"
+        config:
+            namespace: "Agoda.Graphql.SupplyApi.Queries.Rooms.GetObjectExternalData"
+    Agoda.Graphql/SupplyApi/Queries/Rooms/GetRoomById/GetRoomById.generated.cs:
+        documents:
+            - "Agoda.Graphql/SupplyApi/Queries/Rooms/GetRoomById/GetRoomById.graphql"
+        plugins:
+            - "dist/agoda-csharp-codegen.js"
+        config:
+            namespace: "Agoda.Graphql.SupplyApi.Queries.Rooms.GetRoomById"

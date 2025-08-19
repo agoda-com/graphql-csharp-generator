@@ -23,7 +23,10 @@ const generateNamespaceFromPath = (filePath: string): string => {
 const createDynamicConfig = (schemaUrl: string, graphqlFiles: string[]): string => {
     const EOL = os.EOL // Use OS-specific line endings
     
-    let config = `overwrite: true${EOL}schema: "${schemaUrl}"${EOL}generates:${EOL}`
+    let config = `overwrite: true
+schema: "${schemaUrl}"
+generates:
+`
     
     for (const graphqlFile of graphqlFiles) {
         // Create the output .generated.cs file path
@@ -40,13 +43,14 @@ const createDynamicConfig = (schemaUrl: string, graphqlFiles: string[]): string 
         const pluginPath = path.join('.', 'dist', 'agoda-csharp-codegen.js').replace(/\\/g, '/')
         
         // Add the generate section for this file
-        config += `    ${normalizedOutputFile}:${EOL}`
-        config += `        documents:${EOL}`
-        config += `            - "${normalizedGraphqlFile}"${EOL}`
-        config += `        plugins:${EOL}`
-        config += `            - "${pluginPath}"${EOL}`
-        config += `        config:${EOL}`
-        config += `            namespace: "${namespace}"${EOL}`
+        config += `    ${normalizedOutputFile}:
+        documents:
+            - "${normalizedGraphqlFile}"
+        plugins:
+            - "${pluginPath}"
+        config:
+            namespace: "${namespace}"
+`
     }
     
     return config
@@ -55,29 +59,6 @@ const createDynamicConfig = (schemaUrl: string, graphqlFiles: string[]): string 
 export const run = async (): Promise<void> => {
     const currentDir = process.cwd()
     const tempConfigPath = path.join(currentDir, 'temp-codegen.yml')
-    
-    // try {
-    //     // Create temp-codegen.yml from template at current execution location
-    //     console.log('Creating temp-codegen.yml at:', tempConfigPath)
-    //     await fs.writeFile(tempConfigPath, templateCodegen.trim(), 'utf8')
-    //     console.log('Successfully created temp-codegen.yml')
-        
-    //     // Run gql-gen with the created config file
-    //     await runCodegenWithConfig(tempConfigPath)
-        
-    // } catch (error) {
-    //     console.error('Error during GraphQL code generation:', error)
-    //     throw error
-    // } finally {
-    //     // Always clean up the temporary config file
-    //     try {
-    //         await fs.unlink(tempConfigPath)
-    //         console.log('Successfully removed temp-codegen.yml')
-    //     } catch (cleanupError) {
-    //         console.warn('Failed to remove temp-codegen.yml:', cleanupError)
-    //         // Don't throw here - cleanup failure shouldn't fail the main process
-    //     }
-    // }
 
     if (isHelpRequested()) {
         showManual()
@@ -99,10 +80,6 @@ export const run = async (): Promise<void> => {
         console.log('headers: ', headers)
     }
 
-    // const oldGeneratedFiles = await getFiles(rawGraphqlDirectory, '.generated.cs')
-    // console.log('removing generated files...')
-    // await deleteFiles(oldGeneratedFiles)
-
     const graphqlFiles = await getFiles(rawGraphqlDirectory, '.graphql')
     
     if (graphqlFiles.length === 0) {
@@ -118,9 +95,6 @@ export const run = async (): Promise<void> => {
         console.log('Creating dynamic config content...')
         const dynamicConfigContent = createDynamicConfig(schemaUrl, graphqlFiles)
         
-        // Optional: Show generated config for debugging (uncomment to see)
-        // console.log('Generated config content:')
-        // console.log(dynamicConfigContent)
         
         // Create temp-codegen.yml from dynamic content
         console.log('Creating temp-codegen.yml at:', tempConfigPath)
@@ -136,7 +110,7 @@ export const run = async (): Promise<void> => {
     } finally {
         // Always clean up the temporary config file
         try {
-            await fs.unlink(tempConfigPath)
+            // await fs.unlink(tempConfigPath)
             console.log('Successfully removed temp-codegen.yml')
         } catch (cleanupError) {
             console.warn('Failed to remove temp-codegen.yml:', cleanupError)

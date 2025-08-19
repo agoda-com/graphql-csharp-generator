@@ -35,9 +35,7 @@ export const runCodegenWithConfig = async (configFilePath: string): Promise<void
     console.log(`Running gql-gen with config: ${configFilePath}`)
     
     // Properly quote the config file path to handle spaces and special characters
-    const quotedConfigPath = process.platform === 'win32' 
-        ? `"${configFilePath}"` 
-        : `'${configFilePath}'`
+    const quotedConfigPath = `"${configFilePath}"`
     
     return new Promise<void>((resolve, reject) => {
         exec(
