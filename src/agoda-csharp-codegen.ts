@@ -329,10 +329,10 @@ const parseSelectionSet = (selectionSet: SelectionSetNode | undefined, parentTyp
       
       // If this field has a selection set, it's a complex type
       if (selection.selectionSet) {
-        // Get the actual GraphQL type name from schema, not the field name
-        let nestedClassName = pascalFieldName; // fallback
+        // Generate class name based on field name to avoid conflicts when same schema type is used by different fields
+        let nestedClassName = pascalFieldName;
         let nestedType = null;
-        
+
         if (fieldType) {
           nestedType = getNamedType(fieldType);
           if (nestedType && nestedType.name) {
