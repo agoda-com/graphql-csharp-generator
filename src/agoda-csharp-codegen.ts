@@ -11,9 +11,28 @@ import {
   GraphQLType,
   GraphQLObjectType,
   isObjectType,
+  isEnumType,
   TypeNode
 } from 'graphql';
 import { PluginFunction, Types } from '@graphql-codegen/plugin-helpers'
+
+// Constants
+const SCALAR_TYPES = ['String', 'Int', 'Float', 'Boolean', 'ID', 'Date', 'DateTime', 'LocalDate', 'LocalDateTime'];
+
+// Helper function to check if a type is a scalar
+const isScalarType = (typeName: string): boolean => {
+  return SCALAR_TYPES.includes(typeName);
+};
+
+// Helper function to check if a type is an enum
+const isEnumTypeFromSchema = (schema: GraphQLSchema, typeName: string): boolean => {
+  try {
+    const graphqlType = schema.getType(typeName);
+    return !!(graphqlType && isEnumType(graphqlType));
+  } catch (error) {
+    return false;
+  }
+};
 
 // Plugin configuration interface
 interface AgodaCSharpCodegenConfig {
@@ -107,6 +126,8 @@ const convertGraphQLTypeToCSharp = (input: GraphQLType | TypeNode, schema: Graph
     case 'Date': csharpType = 'DateTime'; break;
     case 'DateTime': csharpType = 'DateTime'; break;
     case 'ID': csharpType = 'string'; break;
+    case 'LocalDate': csharpType = 'DateTime'; break;
+    case 'LocalDateTime': csharpType = 'DateTime'; break;
     default: 
       csharpType = toPascalCase(typeName); 
       break;
@@ -166,22 +187,126 @@ const getFieldTypeFromSchema = (parentType: GraphQLType | null, fieldName: strin
   }
 };
 
-// Helper function to generate nested class code
-const generateNestedClass = (className: string, properties: Property[]): string => {
-  const classProperties = properties.map(prop => 
-    `        
-        [JsonProperty("${prop.name}")]
-        public ${prop.type} ${prop.pascalName} { get; set; }`
-  ).join('\n');
-  
-  return `    
-    public sealed class ${className} 
-    {${classProperties}
+// Helper function to extract type name from TypeNode
+const extractTypeName = (typeNode: TypeNode): string => {
+  if (typeNode.kind === 'NamedType') {
+    return typeNode.name.value;
+  } else if (typeNode.kind === 'NonNullType') {
+    return extractTypeName(typeNode.type);
+  } else if (typeNode.kind === 'ListType') {
+    return extractTypeName(typeNode.type);
+  }
+  return 'Unknown';
+};
+
+// Function to generate C# enum from GraphQL enum
+const generateEnumFromGraphQLType = (schema: GraphQLSchema, typeName: string): string => {
+  try {
+    const enumType = schema.getType(typeName);
+    if (!enumType || !('getValues' in enumType)) {
+      return '';
+    }
+    
+    const enumValues = (enumType as any).getValues();
+    const enumValueNames = enumValues.map((value: any) => value.name).join(',\n        ');
+    
+    return `    
+    public enum ${toPascalCase(typeName)} 
+    {
+        ${enumValueNames}
     }`;
+  } catch (error) {
+    console.log(`Error generating enum for ${typeName}:`, error);
+    return '';
+  }
+};
+
+// Unified function to generate C# class from GraphQL type
+const generateClassFromGraphQLType = (
+  schema: GraphQLSchema, 
+  typeName: string, 
+  processedTypes: Set<string> = new Set(),
+  isInputType: boolean = false
+): string[] => {
+  const result: string[] = [];
+  
+  // Avoid infinite recursion
+  if (processedTypes.has(typeName)) {
+    return result;
+  }
+  processedTypes.add(typeName);
+  
+  try {
+    const graphqlType = schema.getType(typeName);
+    if (!graphqlType) {
+      return result;
+    }
+    
+    // Handle enum types
+    if ('getValues' in graphqlType) {
+      const enumDefinition = generateEnumFromGraphQLType(schema, typeName);
+      if (enumDefinition) {
+        result.push(enumDefinition);
+      }
+      return result;
+    }
+    
+    // Handle object types (classes)
+    if (!('getFields' in graphqlType)) {
+      return result;
+    }
+    
+    const fields = (graphqlType as any).getFields();
+    const properties: string[] = [];
+    
+    for (const fieldName in fields) {
+      const field = fields[fieldName];
+      const pascalFieldName = toPascalCase(fieldName);
+      
+      // Convert the GraphQL type to C# type
+      const csharpType = convertGraphQLTypeToCSharp(field.type, schema);
+      
+      // Check if this field uses another custom type that needs to be generated
+      let currentType = field.type;
+      // Unwrap NonNull and List types to get the base type
+      while (isNonNullType(currentType) || isListType(currentType)) {
+        currentType = currentType.ofType;
+      }
+      const namedTypeName = currentType.name;
+      
+      // If it's a custom type (not scalar and not enum), generate it recursively
+      if (!isScalarType(namedTypeName) && !isEnumTypeFromSchema(schema, namedTypeName) && !processedTypes.has(namedTypeName)) {
+        const nestedTypes = generateClassFromGraphQLType(schema, namedTypeName, processedTypes, isInputType);
+        result.push(...nestedTypes);
+      } else if (isEnumTypeFromSchema(schema, namedTypeName) && !processedTypes.has(namedTypeName)) {
+        // Generate enum types that are referenced
+        const enumDefinition = generateEnumFromGraphQLType(schema, namedTypeName);
+        if (enumDefinition) {
+          result.push(enumDefinition);
+          processedTypes.add(namedTypeName);
+        }
+      }
+      
+      properties.push(`        [JsonProperty("${fieldName}")]
+        public ${csharpType} ${pascalFieldName} { get; set; }`);
+    }
+    
+    const classDefinition = `    public sealed class ${toPascalCase(typeName)} 
+    {
+${properties.join('\n')}
+    }`;
+    
+    result.push(classDefinition);
+    
+  } catch (error) {
+    console.log(`Error generating class for ${typeName}:`, error);
+  }
+  
+  return result;
 };
 
 // Helper function to parse selection set recursively
-const parseSelectionSet = (selectionSet: SelectionSetNode | undefined, parentType: GraphQLType | null = null, responseClasses: Set<string> = new Set()): Property[] => {
+const parseSelectionSet = (selectionSet: SelectionSetNode | undefined, parentType: GraphQLType | null = null, responseClasses: Set<string> = new Set(), schema: GraphQLSchema | null = null): Property[] => {
   if (!selectionSet || !selectionSet.selections) return [];
   const properties: Property[] = [];
   
@@ -204,12 +329,15 @@ const parseSelectionSet = (selectionSet: SelectionSetNode | undefined, parentTyp
       
       // If this field has a selection set, it's a complex type
       if (selection.selectionSet) {
-        const nestedClassName = pascalFieldName;
-        
-        // Get the nested type from schema
+        // Get the actual GraphQL type name from schema, not the field name
+        let nestedClassName = pascalFieldName; // fallback
         let nestedType = null;
+        
         if (fieldType) {
           nestedType = getNamedType(fieldType);
+          if (nestedType && nestedType.name) {
+            nestedClassName = toPascalCase(nestedType.name);
+          }
         }
         
         // Determine if it's a list and set the correct C# type
@@ -230,12 +358,24 @@ const parseSelectionSet = (selectionSet: SelectionSetNode | undefined, parentTyp
           csharpType = isList ? `List<${nestedClassName}>` : nestedClassName;
         }
         
-        // Parse nested selection set
-        const nestedProperties = parseSelectionSet(selection.selectionSet, nestedType, responseClasses);
-        
-        // Generate the nested class
-        const nestedClass = generateNestedClass(nestedClassName, nestedProperties);
-        responseClasses.add(nestedClass);
+        // Parse nested selection set recursively to only generate used classes
+        if (selection.selectionSet) {
+          const nestedProperties = parseSelectionSet(selection.selectionSet, nestedType, responseClasses, schema);
+          
+          // Generate only the specific class for this selection set
+          const classProperties = nestedProperties.map(prop => 
+            `        [JsonProperty("${prop.name}")]
+        public ${prop.type} ${prop.pascalName} { get; set; }`
+          ).join('\n');
+          
+          const nestedClass = `    
+    public sealed class ${nestedClassName} 
+    {
+${classProperties}
+    }`;
+          
+          responseClasses.add(nestedClass);
+        }
       }
       
       properties.push({
@@ -316,8 +456,34 @@ export const plugin: PluginFunction<AgodaCSharpCodegenConfig> = (
 
     // Parse selection set to generate response classes
     const responseClasses = new Set<string>();
+    const inputTypeClasses = new Set<string>();
     
-    // Parse the main query operation
+    // Collect input types from variables
+    operationsDefinitions.forEach(op => {
+      if (!op.document.document) return;
+      visit(op.document.document, {
+        OperationDefinition: (node) => {
+          if (node.variableDefinitions) {
+            node.variableDefinitions.forEach(variableDef => {
+              const typeName = extractTypeName(variableDef.type);
+              
+              // Check if this is a custom input type (not a scalar and not an enum)
+              if (!isScalarType(typeName) && !isEnumTypeFromSchema(schema, typeName)) {
+                console.log(`Found custom input type: ${typeName}`);
+                
+                // Generate input type dynamically from schema
+                const generatedInputTypes = generateClassFromGraphQLType(schema, typeName, new Set(), true);
+                generatedInputTypes.forEach((inputTypeClass: string) => {
+                  inputTypeClasses.add(inputTypeClass);
+                });
+              }
+            });
+          }
+        }
+      });
+    });
+    
+    // Parse the main query operation and generate response classes
     let mainDataProperties: Property[] = [];
     operationsDefinitions.forEach(op => {
       if (!op.document.document) return;
@@ -340,7 +506,9 @@ export const plugin: PluginFunction<AgodaCSharpCodegenConfig> = (
             } catch (error) {
               // console.log('Error getting root type from schema:', error.message);
             }
-            mainDataProperties = parseSelectionSet(node.selectionSet, rootType, responseClasses);
+            
+            // Get properties for Data class and generate response classes
+            mainDataProperties = parseSelectionSet(node.selectionSet, rootType, responseClasses, schema);
           }
         }
       });
@@ -384,6 +552,7 @@ ${variablesDict}
     {${dataProperties}
     }
 ${Array.from(responseClasses).join('\n')}
+${Array.from(inputTypeClasses).join('\n')}
 }
 `;
 }
