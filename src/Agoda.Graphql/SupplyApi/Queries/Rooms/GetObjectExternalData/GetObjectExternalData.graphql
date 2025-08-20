@@ -1,9 +1,0 @@
-query GetObjectExternalData($id: BigInt!, $type: String!){
-  ObjectExternalData(objectId: $id, objectType: $type){
-    objectId
-    recStatus
-    externalDataId
-    objectType
-    recModifyWhen
-  }
-}
