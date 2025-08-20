@@ -9,8 +9,8 @@ DESCRIPTION:
     match Agoda's coding standards.
 
 USAGE:
-    npm run generate -- --graphql-dir <directory> --schema-url <url> [--header <name:value>]
-    node src/generate.ts --graphql-dir <directory> --schema-url <url> [--header <name:value>]
+    npm run generate -- --graphql-dir <directory> --schema-url <url> [--graphql-project <project-name>] [--yml-out <output-path>] [--header <name:value>]
+    node src/generate.ts --graphql-dir <directory> --schema-url <url> [--graphql-project <project-name>] [--yml-out <output-path>] [--header <name:value>]
 
 REQUIRED ARGUMENTS:
     --graphql-dir <directory>    Directory containing .graphql files to process
@@ -21,6 +21,15 @@ REQUIRED ARGUMENTS:
                                  Used to validate and generate types from the schema
 
 OPTIONAL ARGUMENTS:
+    --graphql-project <project-name>  Base project name for namespace generation
+                                      When provided, the namespace will be constructed as:
+                                      <project-name>.<path-after-project>
+                                      Example: --graphql-project "Agoda.Graphql"
+
+    --yml-out <output-path>     Custom output path for the generated YAML config file
+                                If not specified, defaults to 'temp-codegen.yml' in current directory
+                                Example: --yml-out "./config/codegen.yml"
+
     --header <name:value>        HTTP header to include in GraphQL schema requests
                                  Can be specified multiple times for multiple headers
                                  Format: "Header-Name: header-value"
@@ -36,6 +45,12 @@ BEHAVIOR:
 EXAMPLES:
     # Basic usage
     graphql-csharp-generator --graphql-dir "./Agoda.Graphql" --schema-url "https://api.example.com/graphql"
+    
+    # With project name for namespace generation
+    graphql-csharp-generator --graphql-dir "./Agoda.Graphql" --schema-url "https://api.example.com/graphql" --graphql-project "Agoda.Graphql"
+    
+    # With custom YAML output path
+    graphql-csharp-generator --graphql-dir "./Agoda.Graphql" --schema-url "https://api.example.com/graphql" --yml-out "./config/codegen.yml"
     
     # With custom headers
     graphql-csharp-generator --graphql-dir "./Agoda.Graphql" --schema-url "https://api.example.com/graphql" --header "API-Key: your-key" --header "Client-ID: xxxx"

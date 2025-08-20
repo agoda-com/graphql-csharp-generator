@@ -8,8 +8,30 @@ import { getFiles, deleteFiles } from './files'
 import { generateGraphql, runCodegenWithConfig } from './core'
 
 // Helper function to generate namespace from file path (cross-platform)
-const generateNamespaceFromPath = (filePath: string): string => {
+const generateNamespaceFromPath = (filePath: string, projectName?: string): string => {
     const dir = path.dirname(filePath)
+    
+    // If project name is provided, construct namespace by finding the project name in the path
+    // and using everything after it
+    if (projectName) {
+        // First, normalize the path to dots
+        const normalizedDir = path.normalize(dir)
+            .replace(/^\.[\\/]/, '') // Remove leading ./ or .\
+            .replace(/[\\/]+/g, '.') // Convert all path separators to dots
+        
+        // Find the project name in the normalized path
+        const projectIndex = normalizedDir.indexOf(projectName)
+        if (projectIndex !== -1) {
+            const pathAfterProject = normalizedDir.substring(projectIndex + projectName.length)
+            // Clean up any leading dots
+            const cleanPathAfterProject = pathAfterProject.replace(/^\.+/, '')
+            return `${projectName}${cleanPathAfterProject ? '.' + cleanPathAfterProject : ''}`
+        }
+        
+        // If project name not found in path, just prepend it
+        return `${projectName}.${normalizedDir}`
+    }
+    
     // Normalize path separators and remove leading ./ or .\
     const normalizedDir = path.normalize(dir)
         .replace(/^\.[\\/]/, '') // Remove leading ./ or .\
@@ -19,7 +41,7 @@ const generateNamespaceFromPath = (filePath: string): string => {
 }
 
 // Helper function to create dynamic config content based on GraphQL files (cross-platform)
-const createDynamicConfig = (schemaUrl: string, graphqlFiles: string[]): string => {
+const createDynamicConfig = (schemaUrl: string, graphqlFiles: string[], projectName?: string): string => {
     let config = `overwrite: true
 schema: "${schemaUrl}"
 generates:
@@ -29,8 +51,8 @@ generates:
         // Create the output .generated.cs file path
         const outputFile = graphqlFile.replace(/\.graphql$/, '.generated.cs')
         
-        // Generate namespace from the directory path
-        const namespace = generateNamespaceFromPath(graphqlFile)
+        // Generate namespace from the directory path with optional project name
+        const namespace = generateNamespaceFromPath(graphqlFile, projectName)
         
         // Normalize paths for YAML config (always use forward slashes in YAML)
         const normalizedOutputFile = outputFile.replace(/\\/g, '/')
@@ -52,8 +74,7 @@ generates:
 
 export const run = async (): Promise<void> => {
     const currentDir = process.cwd()
-    const tempConfigPath = path.join(currentDir, 'temp-codegen.yml')
-
+    
     if (isHelpRequested()) {
         showManual()
         process.exit(0)
@@ -61,15 +82,26 @@ export const run = async (): Promise<void> => {
 
     const rawGraphqlDirectory = getArgValue('graphql-dir')
     const schemaUrl = getArgValue('schema-url')
+    const graphqlProject = getArgValue('graphql-project')
+    const ymlOut = getArgValue('yml-out')
     const headers = getHeaderArgs()
 
     if (!rawGraphqlDirectory || !schemaUrl) {
-        console.error('Usage: script --graphql-dir <dir> --schema-url <url>')
+        console.error('Usage: script --graphql-dir <dir> --schema-url <url> [--graphql-project <project-name>] [--yml-out <output-path>]')
         process.exit(1)
     }
 
+    // Determine the config file path
+    const tempConfigPath = ymlOut ? path.resolve(ymlOut) : path.join(currentDir, 'codegen.yml')
+
     console.log('raw graphql directory: ', rawGraphqlDirectory)
     console.log('graphql schema url: ', schemaUrl)
+    if (graphqlProject) {
+        console.log('graphql project: ', graphqlProject)
+    }
+    if (ymlOut) {
+        console.log('yml output path: ', ymlOut)
+    }
     if (headers.length > 0) {
         console.log('headers: ', headers)
     }
@@ -87,28 +119,31 @@ export const run = async (): Promise<void> => {
     try {
         // Create dynamic config content based on found GraphQL files
         console.log('Creating dynamic config content...')
-        const dynamicConfigContent = createDynamicConfig(schemaUrl, graphqlFiles)
+        const dynamicConfigContent = createDynamicConfig(schemaUrl, graphqlFiles, graphqlProject)
         
         
-        // Create temp-codegen.yml from dynamic content
-        console.log('Creating temp-codegen.yml at:', tempConfigPath)
+        // Create config file from dynamic content
+        const configFileName = path.basename(tempConfigPath)
+        console.log(`Creating ${configFileName} at:`, tempConfigPath)
         await fs.writeFile(tempConfigPath, dynamicConfigContent, 'utf8')
-        console.log('Successfully created temp-codegen.yml')
+        console.log(`Successfully created ${configFileName}`)
         
         // Run gql-gen with the created config file
-        await runCodegenWithConfig(tempConfigPath)
+        // await runCodegenWithConfig(tempConfigPath)
         
     } catch (error) {
         console.error('Error during GraphQL code generation:', error)
         throw error
     } finally {
-        // Always clean up the temporary config file
-        try {
-            // await fs.unlink(tempConfigPath)
-            console.log('Successfully removed temp-codegen.yml')
-        } catch (cleanupError) {
-            console.warn('Failed to remove temp-codegen.yml:', cleanupError)
-            // Don't throw here - cleanup failure shouldn't fail the main process
+        // Only clean up if it's the default temp file (not a custom yml-out)
+        if (!ymlOut) {
+            try {
+                // await fs.unlink(tempConfigPath)
+                console.log('Successfully removed temp-codegen.yml')
+            } catch (cleanupError) {
+                console.warn('Failed to remove temp-codegen.yml:', cleanupError)
+                // Don't throw here - cleanup failure shouldn't fail the main process
+            }
         }
     }
 

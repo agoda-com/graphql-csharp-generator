@@ -6,7 +6,7 @@
     "dist"
   ],
   "scripts": {
-    "generate-graphql": "ts-node ./src/generate.ts --schema-url 'https://smapi-qa-http.privatecloud.qa.agoda.is/v2/graphql' --graphql-dir './Agoda.Graphql/SupplyApi/Queries'",
+    "generate-codegen-config": "ts-node ./src/generate.ts --schema-url 'https://smapi-qa-http.privatecloud.qa.agoda.is/v2/graphql' --graphql-dir './src/Agoda.Graphql/SupplyApi/Queries' --graphql-project 'Agoda.Graphql' --yml-out './codegen.yml'",
     "generate-graphql-csharp": "gql-gen --config codegen.yml",
     "build": "tsc"
   },
