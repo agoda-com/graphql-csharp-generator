@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Agoda.Graphql;
 
-namespace Agoda.Graphql.SupplyApi.Queries.Availabilities
+namespace Agoda.Graphql.SupplyApi.Queries.Availabilities.GetAvailabilities
 {
     public class Query : QueryBase<Data>
     {

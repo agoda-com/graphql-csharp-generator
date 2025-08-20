@@ -1,0 +1,16 @@
+query BookingDisountsByBookingIds($bookingIds: [Int!]!) {
+  result: BookingDetailsByBookingIds(bookingIds: $bookingIds) {
+    bookingId
+    propertyBooking {
+      bookingDiscounts {
+        bookingId
+        discountType
+        discountId
+        discountRateType
+        discountRate
+        discountName
+        appliedDate
+      }
+    }
+  }
+}

@@ -6,15 +6,10 @@ import {
   getNamedType, 
   typeFromAST,
   GraphQLSchema,
-  DocumentNode,
-  OperationDefinitionNode,
-  FieldNode,
   SelectionSetNode,
   VariableDefinitionNode,
   GraphQLType,
   GraphQLObjectType,
-  GraphQLNonNull,
-  GraphQLList,
   isObjectType,
   TypeNode
 } from 'graphql';

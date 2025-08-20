@@ -30,6 +30,35 @@ export const getGqlGenCommand = (): string => {
     }
 }
 
+// Run gql-gen with a config file (cross-platform)
+export const runCodegenWithConfig = async (configFilePath: string): Promise<void> => {
+    console.log(`Running gql-gen with config: ${configFilePath}`)
+    
+    // Properly quote the config file path to handle spaces and special characters
+    const quotedConfigPath = `"${configFilePath}"`
+    
+    return new Promise<void>((resolve, reject) => {
+        exec(
+            `gql-gen --config ${quotedConfigPath}`,
+            (error, stdout, stderr) => {
+                if (stdout) {
+                    console.log('stdout:', stdout)
+                }
+                if (stderr) {
+                    console.log('stderr:', stderr)
+                }
+                if (error) {
+                    console.error(`Error: ${error.message}`)
+                    reject(error)
+                    return
+                }
+                console.log('GraphQL code generation completed successfully')
+                resolve()
+            }
+        )
+    })
+}
+
 // Generate GraphQL code and post-process
 export const generateGraphql = async (schemaUrl: string, filePath: string, headers: string[] = []): Promise<void> => {
     const folder = path.dirname(filePath)

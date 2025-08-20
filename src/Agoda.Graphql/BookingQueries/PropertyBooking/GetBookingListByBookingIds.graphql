@@ -1,0 +1,54 @@
+query GetBookingListByBookingIds($bookingIds: [Int!]!) {
+  BookingDetailsByBookingIds(bookingIds: $bookingIds) {
+    baseBooking {
+      bookingId
+    }
+    propertyBooking {
+      checkinDate
+      checkoutDate
+      bookingHotelRooms {
+        roomTypeId
+      }
+      paymentModel
+      guests {
+        firstName
+        lastName
+        guestNo
+      }
+      property {
+        hotelId
+      }
+      dmc {
+        dmcId
+      }
+      resellBookingFeature {
+        smartFlex {
+          smartFlexBooking {
+            smartFlexScenario
+          }
+          replacementBooking {
+            smartFlexScenario
+          }
+        }
+      }
+      acknowledge {
+          ackTypeId
+      }
+      occupancy {
+        numberOfAdults
+        numberOfChildren
+      }
+      resellBooking {
+        resellBookingId
+        resellStatusId
+        resellTypeId
+        guestInfo {
+          guests {
+            firstName
+            lastName
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 export const getArgValue = (argName: string): string | undefined => {
     const args = process.argv.slice(2)
-    const index = args.indexOf(`--${argName}`)
+    const index = args.indexOf(argName)
     if (index !== -1 && args[index + 1]) {
         let value = args[index + 1]
         if ((value.startsWith("'") && value.endsWith("'")) || (value.startsWith('"') && value.endsWith('"'))) {
