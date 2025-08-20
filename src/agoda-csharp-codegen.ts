@@ -107,6 +107,8 @@ const convertGraphQLTypeToCSharp = (input: GraphQLType | TypeNode, schema: Graph
     case 'Date': csharpType = 'DateTime'; break;
     case 'DateTime': csharpType = 'DateTime'; break;
     case 'ID': csharpType = 'string'; break;
+    case 'LocalDate': csharpType = 'DateTime'; break;
+    case 'LocalDateTime': csharpType = 'DateTime'; break;
     default: 
       csharpType = toPascalCase(typeName); 
       break;
@@ -178,6 +180,78 @@ const generateNestedClass = (className: string, properties: Property[]): string 
     public sealed class ${className} 
     {${classProperties}
     }`;
+};
+
+// Helper function to extract type name from TypeNode
+const extractTypeName = (typeNode: TypeNode): string => {
+  if (typeNode.kind === 'NamedType') {
+    return typeNode.name.value;
+  } else if (typeNode.kind === 'NonNullType') {
+    return extractTypeName(typeNode.type);
+  } else if (typeNode.kind === 'ListType') {
+    return extractTypeName(typeNode.type);
+  }
+  return 'Unknown';
+};
+
+// Helper function to generate input type class from GraphQL schema
+const generateInputTypeFromSchema = (schema: GraphQLSchema, typeName: string, processedTypes: Set<string> = new Set()): string[] => {
+  const result: string[] = [];
+  
+  // Avoid infinite recursion
+  if (processedTypes.has(typeName)) {
+    return result;
+  }
+  processedTypes.add(typeName);
+  
+  try {
+    const inputType = schema.getType(typeName);
+    if (!inputType || !('getFields' in inputType)) {
+      return result;
+    }
+    
+    const fields = (inputType as any).getFields();
+    const properties: string[] = [];
+    
+    for (const fieldName in fields) {
+      const field = fields[fieldName];
+      const pascalFieldName = toPascalCase(fieldName);
+      
+      // Convert the GraphQL type to C# type
+      const csharpType = convertGraphQLTypeToCSharp(field.type, schema);
+      
+      // Check if this field uses another input type that needs to be generated
+      let currentType = field.type;
+      // Unwrap NonNull and List types to get the base type
+      while (isNonNullType(currentType) || isListType(currentType)) {
+        currentType = currentType.ofType;
+      }
+      const namedTypeName = currentType.name;
+      
+      // If it's a custom input type, generate it recursively
+      const scalarTypes = ['String', 'Int', 'Float', 'Boolean', 'ID', 'Date', 'DateTime'];
+      if (!scalarTypes.includes(namedTypeName) && !processedTypes.has(namedTypeName)) {
+        const nestedInputTypes = generateInputTypeFromSchema(schema, namedTypeName, processedTypes);
+        result.push(...nestedInputTypes);
+      }
+      
+      properties.push(`        [JsonProperty("${fieldName}")]
+        public ${csharpType} ${pascalFieldName} { get; set; }`);
+    }
+    
+    const classDefinition = `    
+    public sealed class ${toPascalCase(typeName)} 
+    {
+${properties.join('\n')}
+    }`;
+    
+    result.push(classDefinition);
+    
+  } catch (error) {
+    console.log(`Error generating input type for ${typeName}:`, error);
+  }
+  
+  return result;
 };
 
 // Helper function to parse selection set recursively
@@ -316,6 +390,33 @@ export const plugin: PluginFunction<AgodaCSharpCodegenConfig> = (
 
     // Parse selection set to generate response classes
     const responseClasses = new Set<string>();
+    const inputTypeClasses = new Set<string>();
+    
+    // Collect input types from variables
+    operationsDefinitions.forEach(op => {
+      if (!op.document.document) return;
+      visit(op.document.document, {
+        OperationDefinition: (node) => {
+          if (node.variableDefinitions) {
+            node.variableDefinitions.forEach(variableDef => {
+              const typeName = extractTypeName(variableDef.type);
+              
+              // Check if this is a custom input type (not a scalar)
+              const scalarTypes = ['String', 'Int', 'Float', 'Boolean', 'ID', 'Date', 'DateTime'];
+              if (!scalarTypes.includes(typeName)) {
+                console.log(`Found custom input type: ${typeName}`);
+                
+                // Generate input type dynamically from schema
+                const generatedInputTypes = generateInputTypeFromSchema(schema, typeName);
+                generatedInputTypes.forEach(inputTypeClass => {
+                  inputTypeClasses.add(inputTypeClass);
+                });
+              }
+            });
+          }
+        }
+      });
+    });
     
     // Parse the main query operation
     let mainDataProperties: Property[] = [];
@@ -384,6 +485,7 @@ ${variablesDict}
     {${dataProperties}
     }
 ${Array.from(responseClasses).join('\n')}
+${Array.from(inputTypeClasses).join('\n')}
 }
 `;
 }
