@@ -2,7 +2,6 @@
 
 import { promises as fs } from 'fs'
 import path from 'path'
-import os from 'os'
 import { getArgValue, getHeaderArgs, isHelpRequested } from './utils'
 import { showManual } from './manual'
 import { getFiles, deleteFiles } from './files'
@@ -21,8 +20,6 @@ const generateNamespaceFromPath = (filePath: string): string => {
 
 // Helper function to create dynamic config content based on GraphQL files (cross-platform)
 const createDynamicConfig = (schemaUrl: string, graphqlFiles: string[]): string => {
-    const EOL = os.EOL // Use OS-specific line endings
-    
     let config = `overwrite: true
 schema: "${schemaUrl}"
 generates:
@@ -39,15 +36,12 @@ generates:
         const normalizedOutputFile = outputFile.replace(/\\/g, '/')
         const normalizedGraphqlFile = graphqlFile.replace(/\\/g, '/')
         
-        // Create cross-platform plugin path
-        const pluginPath = path.join('.', 'dist', 'agoda-csharp-codegen.js').replace(/\\/g, '/')
-        
         // Add the generate section for this file
         config += `    ${normalizedOutputFile}:
         documents:
             - "${normalizedGraphqlFile}"
         plugins:
-            - "${pluginPath}"
+            - "agoda-graphql-csharp-generator"
         config:
             namespace: "${namespace}"
 `
