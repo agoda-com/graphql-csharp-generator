@@ -264,7 +264,35 @@ const generateClassFromGraphQLType = (
       const pascalFieldName = toPascalCase(fieldName);
       
       // Convert the GraphQL type to C# type
-      const csharpType = convertGraphQLTypeToCSharp(field.type, schema);
+      // For complex types, use field-based naming to avoid conflicts
+      let csharpType = convertGraphQLTypeToCSharp(field.type, schema);
+      
+      // For input types, use schema type names; for response types, use field-based naming
+      let fieldType = field.type;
+      while (isNonNullType(fieldType) || isListType(fieldType)) {
+        fieldType = fieldType.ofType;
+      }
+      const fieldTypeName = fieldType.name;
+      
+      if (!isScalarType(fieldTypeName) && !isEnumTypeFromSchema(schema, fieldTypeName)) {
+        if (isInputType) {
+          // For input types, use schema type names to maintain consistency
+          const schemaTypeName = toPascalCase(fieldTypeName);
+          if (isListType(field.type)) {
+            csharpType = `List<${schemaTypeName}>`;
+          } else {
+            csharpType = schemaTypeName;
+          }
+        } else {
+          // For response types, use field-based naming to avoid conflicts
+          const fieldBasedTypeName = toPascalCase(fieldName);
+          if (isListType(field.type)) {
+            csharpType = `List<${fieldBasedTypeName}>`;
+          } else {
+            csharpType = fieldBasedTypeName;
+          }
+        }
+      }
       
       // Check if this field uses another custom type that needs to be generated
       let currentType = field.type;
@@ -306,14 +334,16 @@ ${properties.join('\n')}
 };
 
 // Helper function to parse selection set recursively
-const parseSelectionSet = (selectionSet: SelectionSetNode | undefined, parentType: GraphQLType | null = null, responseClasses: Set<string> = new Set(), schema: GraphQLSchema | null = null): Property[] => {
+const parseSelectionSet = (selectionSet: SelectionSetNode | undefined, parentType: GraphQLType | null = null, responseClasses: Set<string> = new Set(), schema: GraphQLSchema | null = null, parentFieldName: string = '', existingClassNames: Set<string> = new Set()): Property[] => {
   if (!selectionSet || !selectionSet.selections) return [];
   const properties: Property[] = [];
   
   selectionSet.selections.forEach(selection => {
     if (selection.kind === 'Field') {
       const fieldName = selection.name.value;
-      const pascalFieldName = toPascalCase(fieldName);
+      // Use alias if available, otherwise use field name
+      const className = selection.alias ? selection.alias.value : fieldName;
+      const pascalFieldName = toPascalCase(className);
       
       // Get actual field type from schema
       let csharpType = 'string'; // fallback
@@ -329,16 +359,19 @@ const parseSelectionSet = (selectionSet: SelectionSetNode | undefined, parentTyp
       
       // If this field has a selection set, it's a complex type
       if (selection.selectionSet) {
-        // Generate class name based on field name to avoid conflicts when same schema type is used by different fields
+        // Generate unique class name by combining parent field name if there's a duplicate
         let nestedClassName = pascalFieldName;
         let nestedType = null;
 
         if (fieldType) {
           nestedType = getNamedType(fieldType);
-          if (nestedType && nestedType.name) {
-            nestedClassName = toPascalCase(nestedType.name);
-          }
         }
+        
+        // Check if this class name already exists and combine with parent field name if needed
+        if (existingClassNames.has(nestedClassName) && parentFieldName) {
+          nestedClassName = toPascalCase(parentFieldName) + nestedClassName;
+        }
+        existingClassNames.add(nestedClassName);
         
         // Determine if it's a list and set the correct C# type
         if (fieldType) {
@@ -360,7 +393,7 @@ const parseSelectionSet = (selectionSet: SelectionSetNode | undefined, parentTyp
         
         // Parse nested selection set recursively to only generate used classes
         if (selection.selectionSet) {
-          const nestedProperties = parseSelectionSet(selection.selectionSet, nestedType, responseClasses, schema);
+          const nestedProperties = parseSelectionSet(selection.selectionSet, nestedType, responseClasses, schema, fieldName, existingClassNames);
           
           // Generate only the specific class for this selection set
           const classProperties = nestedProperties.map(prop => 
@@ -508,7 +541,7 @@ export const plugin: PluginFunction<AgodaCSharpCodegenConfig> = (
             }
             
             // Get properties for Data class and generate response classes
-            mainDataProperties = parseSelectionSet(node.selectionSet, rootType, responseClasses, schema);
+            mainDataProperties = parseSelectionSet(node.selectionSet, rootType, responseClasses, schema, '', new Set());
           }
         }
       });

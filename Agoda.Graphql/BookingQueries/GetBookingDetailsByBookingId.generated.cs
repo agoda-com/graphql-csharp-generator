@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Agoda.Graphql;
 
-namespace Agoda.Graphql.BookingQueries.PropertyBooking
+namespace Agoda.Graphql.BookingQueries
 {
     public class Query : QueryBase<Data>
     {

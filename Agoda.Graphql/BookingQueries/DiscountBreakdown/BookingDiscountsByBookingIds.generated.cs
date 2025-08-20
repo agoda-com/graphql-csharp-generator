@@ -43,10 +43,10 @@ namespace Agoda.Graphql.BookingQueries.DiscountBreakdown
     public sealed class Data
     {        
         [JsonProperty("BookingDetailsByBookingIds")]
-        public List<CrossProductBookingMeta> BookingDetailsByBookingIds { get; set; }
+        public List<Result> Result { get; set; }
     }
     
-    public sealed class BookingDiscountBreakdown 
+    public sealed class BookingDiscounts 
     {
         [JsonProperty("bookingId")]
         public long BookingId { get; set; }
@@ -67,10 +67,10 @@ namespace Agoda.Graphql.BookingQueries.DiscountBreakdown
     public sealed class PropertyBooking 
     {
         [JsonProperty("bookingDiscounts")]
-        public List<BookingDiscountBreakdown> BookingDiscounts { get; set; }
+        public List<BookingDiscounts> BookingDiscounts { get; set; }
     }
     
-    public sealed class CrossProductBookingMeta 
+    public sealed class Result 
     {
         [JsonProperty("bookingId")]
         public int BookingId { get; set; }

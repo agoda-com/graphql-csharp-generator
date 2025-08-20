@@ -37,7 +37,7 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking
     public sealed class Data
     {        
         [JsonProperty("PropertyBookingByYCSCriteria")]
-        public PaginationPropertyYcsBooking PropertyBookingByYCSCriteria { get; set; }
+        public PropertyBookingByYCSCriteria PropertyBookingByYCSCriteria { get; set; }
     }
     
     public sealed class Pagination 
@@ -52,7 +52,7 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking
         public int TotalRecords { get; set; }
     }
     
-    public sealed class PaginationPropertyYcsBooking 
+    public sealed class PropertyBookingByYCSCriteria 
     {
         [JsonProperty("pagination")]
         public Pagination Pagination { get; set; }
@@ -81,7 +81,7 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking
         [JsonProperty("blacklistDmcIds")]
         public List<int>? BlacklistDmcIds { get; set; }
         [JsonProperty("bookingDatePeriod")]
-        public DateRange? BookingDatePeriod { get; set; }
+        public DateRange BookingDatePeriod { get; set; }
         [JsonProperty("bookingId")]
         public int? BookingId { get; set; }
         [JsonProperty("customerName")]
@@ -89,7 +89,7 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking
         [JsonProperty("hotelId")]
         public int HotelId { get; set; }
         [JsonProperty("lastUpdateDatePeriod")]
-        public DateRange? LastUpdateDatePeriod { get; set; }
+        public DateRange LastUpdateDatePeriod { get; set; }
         [JsonProperty("pageIndex")]
         public int? PageIndex { get; set; }
         [JsonProperty("pageSize")]
@@ -103,7 +103,7 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking
         [JsonProperty("sorting")]
         public string Sorting { get; set; }
         [JsonProperty("stayDatePeriod")]
-        public DateRange? StayDatePeriod { get; set; }
+        public DateRange StayDatePeriod { get; set; }
         [JsonProperty("whitelistDmcIds")]
         public List<int>? WhitelistDmcIds { get; set; }
     }
