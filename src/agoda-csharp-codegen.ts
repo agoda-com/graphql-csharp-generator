@@ -11,6 +11,7 @@ import {
   GraphQLType,
   GraphQLObjectType,
   isObjectType,
+  isEnumType,
   TypeNode
 } from 'graphql';
 import { PluginFunction, Types } from '@graphql-codegen/plugin-helpers'
@@ -18,22 +19,19 @@ import { PluginFunction, Types } from '@graphql-codegen/plugin-helpers'
 // Constants
 const SCALAR_TYPES = ['String', 'Int', 'Float', 'Boolean', 'ID', 'Date', 'DateTime', 'LocalDate', 'LocalDateTime'];
 
-// Helper function to check if a type is a scalar or enum
-const isScalarOrEnum = (schema: GraphQLSchema, typeName: string): boolean => {
-  if (SCALAR_TYPES.includes(typeName)) {
-    return true;
-  }
-  
+// Helper function to check if a type is a scalar
+const isScalarType = (typeName: string): boolean => {
+  return SCALAR_TYPES.includes(typeName);
+};
+
+// Helper function to check if a type is an enum
+const isEnumTypeFromSchema = (schema: GraphQLSchema, typeName: string): boolean => {
   try {
     const graphqlType = schema.getType(typeName);
-    if (graphqlType && 'getValues' in graphqlType) {
-      return true; // It's an enum
-    }
+    return !!(graphqlType && isEnumType(graphqlType));
   } catch (error) {
-    // Ignore errors
+    return false;
   }
-  
-  return false;
 };
 
 // Plugin configuration interface
@@ -131,17 +129,7 @@ const convertGraphQLTypeToCSharp = (input: GraphQLType | TypeNode, schema: Graph
     case 'LocalDate': csharpType = 'DateTime'; break;
     case 'LocalDateTime': csharpType = 'DateTime'; break;
     default: 
-      // Check if it's an enum type
-      try {
-        const graphqlType = schema?.getType(typeName);
-        if (graphqlType && graphqlType.astNode && graphqlType.astNode.kind === 'EnumTypeDefinition') {
-          csharpType = toPascalCase(typeName);
-        } else {
-          csharpType = toPascalCase(typeName); 
-        }
-      } catch (error) {
-        csharpType = toPascalCase(typeName); 
-      }
+      csharpType = toPascalCase(typeName); 
       break;
   }
   
@@ -286,11 +274,11 @@ const generateClassFromGraphQLType = (
       }
       const namedTypeName = currentType.name;
       
-      // If it's a custom type, generate it recursively
-      if (!isScalarOrEnum(schema, namedTypeName) && !processedTypes.has(namedTypeName)) {
+      // If it's a custom type (not scalar and not enum), generate it recursively
+      if (!isScalarType(namedTypeName) && !isEnumTypeFromSchema(schema, namedTypeName) && !processedTypes.has(namedTypeName)) {
         const nestedTypes = generateClassFromGraphQLType(schema, namedTypeName, processedTypes, isInputType);
         result.push(...nestedTypes);
-      } else if (isScalarOrEnum(schema, namedTypeName) && !SCALAR_TYPES.includes(namedTypeName) && !processedTypes.has(namedTypeName)) {
+      } else if (isEnumTypeFromSchema(schema, namedTypeName) && !processedTypes.has(namedTypeName)) {
         // Generate enum types that are referenced
         const enumDefinition = generateEnumFromGraphQLType(schema, namedTypeName);
         if (enumDefinition) {
@@ -479,8 +467,8 @@ export const plugin: PluginFunction<AgodaCSharpCodegenConfig> = (
             node.variableDefinitions.forEach(variableDef => {
               const typeName = extractTypeName(variableDef.type);
               
-              // Check if this is a custom input type (not a scalar or enum)
-              if (!isScalarOrEnum(schema, typeName)) {
+              // Check if this is a custom input type (not a scalar and not an enum)
+              if (!isScalarType(typeName) && !isEnumTypeFromSchema(schema, typeName)) {
                 console.log(`Found custom input type: ${typeName}`);
                 
                 // Generate input type dynamically from schema
