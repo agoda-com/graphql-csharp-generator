@@ -4,9 +4,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Agoda.Graphql;
 
-namespace Agoda.Graphql.BookingDisountsByBookingIds
+namespace Agoda.Graphql.BookingQueries.DiscountBreakdown
 {
-    public partial class Query : QueryBase<Data>
+    public class Query : QueryBase<Data>
     {
         private const string _query = @"query BookingDisountsByBookingIds($bookingIds: [Int!]!) {
   result: BookingDetailsByBookingIds(bookingIds: $bookingIds) {
