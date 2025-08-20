@@ -87,10 +87,10 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking
     public sealed class Data
     {        
         [JsonProperty("PropertyBookingByYCSCriteria")]
-        public PropertyBookingByYCSCriteria PropertyBookingByYCSCriteria { get; set; }
+        public PaginationPropertyYcsBooking PropertyBookingByYCSCriteria { get; set; }
     }
     
-    public sealed class Guests 
+    public sealed class PropertyGuest 
     {
         [JsonProperty("guestNo")]
         public int GuestNo { get; set; }
@@ -100,13 +100,13 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking
         public string LastName { get; set; }
     }
     
-    public sealed class BookingHotelRooms 
+    public sealed class PropertyRoom 
     {
         [JsonProperty("roomTypeId")]
         public int? RoomTypeId { get; set; }
     }
     
-    public sealed class Property 
+    public sealed class PropertyInfo 
     {
         [JsonProperty("hotelId")]
         public int HotelId { get; set; }
@@ -115,16 +115,16 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking
         [JsonProperty("noOfChildren")]
         public int NoOfChildren { get; set; }
         [JsonProperty("bookingHotelRooms")]
-        public List<BookingHotelRooms> BookingHotelRooms { get; set; }
+        public List<PropertyRoom> BookingHotelRooms { get; set; }
     }
     
-    public sealed class Acknowledge 
+    public sealed class PropertyBookingAcknowledge 
     {
         [JsonProperty("ackTypeId")]
         public int AckTypeId { get; set; }
     }
     
-    public sealed class SmartFlexBooking 
+    public sealed class SmartFlexBookingQueryInput 
     {
         [JsonProperty("smartFlexScenario")]
         public int? SmartFlexScenario { get; set; }
@@ -136,21 +136,21 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking
         public int? SmartFlexScenario { get; set; }
     }
     
-    public sealed class SmartFlex 
+    public sealed class SmartFlexQueryInput 
     {
         [JsonProperty("smartFlexBooking")]
-        public SmartFlexBooking SmartFlexBooking { get; set; }
+        public SmartFlexBookingQueryInput SmartFlexBooking { get; set; }
         [JsonProperty("replacementBooking")]
         public ReplacementBooking ReplacementBooking { get; set; }
     }
     
-    public sealed class ResellBookingFeature 
+    public sealed class ResellBookingFeatureQueryInput 
     {
         [JsonProperty("smartFlex")]
-        public SmartFlex SmartFlex { get; set; }
+        public SmartFlexQueryInput SmartFlex { get; set; }
     }
     
-    public sealed class Guests 
+    public sealed class BookingGuest 
     {
         [JsonProperty("firstName")]
         public string FirstName { get; set; }
@@ -158,13 +158,13 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking
         public string LastName { get; set; }
     }
     
-    public sealed class GuestInfo 
+    public sealed class EnigmaGuestInfo 
     {
         [JsonProperty("guests")]
-        public List<Guests> Guests { get; set; }
+        public List<BookingGuest> Guests { get; set; }
     }
     
-    public sealed class ResellBooking 
+    public sealed class ResellBookingDetails 
     {
         [JsonProperty("resellBookingId")]
         public int? ResellBookingId { get; set; }
@@ -173,16 +173,16 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking
         [JsonProperty("resellTypeId")]
         public int? ResellTypeId { get; set; }
         [JsonProperty("guestInfo")]
-        public GuestInfo GuestInfo { get; set; }
+        public EnigmaGuestInfo GuestInfo { get; set; }
     }
     
-    public sealed class Dmc 
+    public sealed class PropertyDmc 
     {
         [JsonProperty("dmcId")]
         public int? DmcId { get; set; }
     }
     
-    public sealed class Summary 
+    public sealed class PropertyBookingSummary 
     {
         [JsonProperty("whitelabelId")]
         public int? WhitelabelId { get; set; }
@@ -190,7 +190,7 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking
         public int? StayType { get; set; }
     }
     
-    public sealed class Properties 
+    public sealed class PropertyBooking 
     {
         [JsonProperty("bookingId")]
         public int BookingId { get; set; }
@@ -201,19 +201,19 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking
         [JsonProperty("paymentModel")]
         public int? PaymentModel { get; set; }
         [JsonProperty("guests")]
-        public List<Guests> Guests { get; set; }
+        public List<PropertyGuest> Guests { get; set; }
         [JsonProperty("property")]
-        public Property Property { get; set; }
+        public PropertyInfo Property { get; set; }
         [JsonProperty("acknowledge")]
-        public Acknowledge Acknowledge { get; set; }
+        public PropertyBookingAcknowledge Acknowledge { get; set; }
         [JsonProperty("resellBookingFeature")]
-        public ResellBookingFeature ResellBookingFeature { get; set; }
+        public ResellBookingFeatureQueryInput ResellBookingFeature { get; set; }
         [JsonProperty("resellBooking")]
-        public ResellBooking ResellBooking { get; set; }
+        public ResellBookingDetails ResellBooking { get; set; }
         [JsonProperty("dmc")]
-        public Dmc Dmc { get; set; }
+        public PropertyDmc Dmc { get; set; }
         [JsonProperty("summary")]
-        public Summary Summary { get; set; }
+        public PropertyBookingSummary Summary { get; set; }
     }
     
     public sealed class Pagination 
@@ -228,10 +228,10 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking
         public int TotalRecords { get; set; }
     }
     
-    public sealed class PropertyBookingByYCSCriteria 
+    public sealed class PaginationPropertyYcsBooking 
     {
         [JsonProperty("properties")]
-        public List<Properties> Properties { get; set; }
+        public List<PropertyBooking> Properties { get; set; }
         [JsonProperty("pagination")]
         public Pagination Pagination { get; set; }
     }

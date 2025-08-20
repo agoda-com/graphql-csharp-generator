@@ -329,12 +329,15 @@ const parseSelectionSet = (selectionSet: SelectionSetNode | undefined, parentTyp
       
       // If this field has a selection set, it's a complex type
       if (selection.selectionSet) {
-                // Generate class name based on field name to avoid conflicts when same schema type is used by different fields
+        // Generate class name based on field name to avoid conflicts when same schema type is used by different fields
         let nestedClassName = pascalFieldName;
         let nestedType = null;
 
         if (fieldType) {
           nestedType = getNamedType(fieldType);
+          if (nestedType && nestedType.name) {
+            nestedClassName = toPascalCase(nestedType.name);
+          }
         }
         
         // Determine if it's a list and set the correct C# type

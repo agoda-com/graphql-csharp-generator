@@ -37,7 +37,7 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking
     public sealed class Data
     {        
         [JsonProperty("PropertyBookingByYCSCriteria")]
-        public PropertyBookingByYCSCriteria PropertyBookingByYCSCriteria { get; set; }
+        public PaginationPropertyYcsBooking PropertyBookingByYCSCriteria { get; set; }
     }
     
     public sealed class Pagination 
@@ -52,7 +52,7 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking
         public int TotalRecords { get; set; }
     }
     
-    public sealed class PropertyBookingByYCSCriteria 
+    public sealed class PaginationPropertyYcsBooking 
     {
         [JsonProperty("pagination")]
         public Pagination Pagination { get; set; }

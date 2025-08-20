@@ -82,7 +82,7 @@ schema: "${schemaUrl}"
         documents:
             - "${normalizedGraphqlFile}"
         plugins:
-            - "agoda-graphql-csharp-generator"
+            - "./dist/agoda-csharp-codegen.js"
         config:
             namespace: "${namespace}"
 `
