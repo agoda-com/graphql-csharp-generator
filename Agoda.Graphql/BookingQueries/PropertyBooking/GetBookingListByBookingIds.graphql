@@ -1,54 +1,94 @@
-query GetBookingListByBookingIds($bookingIds: [Int!]!) {
-  BookingDetailsByBookingIds(bookingIds: $bookingIds) {
-    baseBooking {
-      bookingId
-    }
-    propertyBooking {
-      checkinDate
-      checkoutDate
-      bookingHotelRooms {
-        roomTypeId
-      }
-      paymentModel
-      guests {
-        firstName
-        lastName
-        guestNo
-      }
-      property {
-        hotelId
-      }
-      dmc {
-        dmcId
-      }
-      resellBookingFeature {
-        smartFlex {
-          smartFlexBooking {
-            smartFlexScenario
-          }
-          replacementBooking {
-            smartFlexScenario
-          }
+query GetBookingDetailsByBookingId($bookingIds: [Int!]!) {
+    BookingDetailsByBookingIds(bookingIds: $bookingIds) {
+        propertyBooking {
+            bookingId
+            acknowledge {
+                ackTypeId
+                paymentModel
+            }
+            guests {
+                guestNo
+                firstName
+                lastName
+                nationalityName
+            }
+            summary {
+                stayType
+            }
+            checkinDate
+            checkoutDate
+            bookingDate
+            recCreatedWhen
+            recModifiedWhen
+            property {
+                hotelId
+                noOfRooms
+                noOfAdults
+                noOfChildren
+                noOfExtraBeds
+                bookingHotelRooms {
+                    roomTypeId
+                }
+                otherSpecialNeeds
+                propertyDetails {
+                    country {
+                        countryId
+                        gmtOffset
+                    }
+                }
+            }
+            benefits {
+                benefitList: benefits {
+                    benefitId
+                    displayText
+                }
+            }
+            memberId
+            resellBooking {
+                resellStatusId
+                resellBookingId
+                bookingId
+                guestInfo {
+                    guests {
+                        firstName
+                        lastName
+                    }
+                }
+            }
+            originalResellBooking {
+                resellStatusId
+                resellBookingId
+                bookingId
+            }
+            resellBookingFeature {
+                smartFlex {
+                    smartFlexBooking {
+                        smartFlexScenario
+                        liabilityStatus {
+                            replacedBookingId
+                            dateOfStay
+                            reason
+                        }
+                    }
+                    replacementBooking {
+                        smartFlexScenario
+                        originalSmartFlexBooking {
+                            bookingId
+                        }
+                    }
+                }
+            }
+            enigmaAPI {
+                contact {
+                    phoneNumber
+                }
+            }
+            workflow {
+                workflowStateId
+            }
+            dmc {
+                dmcId
+            }
         }
-      }
-      acknowledge {
-          ackTypeId
-      }
-      occupancy {
-        numberOfAdults
-        numberOfChildren
-      }
-      resellBooking {
-        resellBookingId
-        resellStatusId
-        resellTypeId
-        guestInfo {
-          guests {
-            firstName
-            lastName
-          }
-        }
-      }
     }
-  }
 }
