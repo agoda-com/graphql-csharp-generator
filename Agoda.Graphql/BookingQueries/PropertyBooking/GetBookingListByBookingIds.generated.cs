@@ -4,17 +4,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Agoda.Graphql;
 
-
-
-
-#region GetBookingListByBookingIds 
-
-namespace Agoda.Graphql.BookingQueries.PropertyBooking.GetBookingListByBookingIds
+namespace Agoda.Graphql.BookingQueries.PropertyBooking
 {
-
-    /// <summary>Operation Type</summary>
-    public partial class Query : QueryBase<Data>
-    { 
+    public class Query : QueryBase<Data>
+    {
         private const string _query = @"query GetBookingListByBookingIds($bookingIds: [Int!]!) {
   BookingDetailsByBookingIds(bookingIds: $bookingIds) {
     baseBooking {
@@ -70,249 +63,159 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking.GetBookingListByBookingId
   }
 }";
 
+        public List<int> BookingIds { get; }
+
         public Query(List<int> bookingIds, IResultProcessor<Data> resultProcessor = null) : base(resultProcessor)
         {
             BookingIds = bookingIds;
         }
         
-        public List<int> BookingIds { get; }
         protected override string QueryText => _query;
 
         protected override Dictionary<string, object> Variables => new Dictionary<string, object>
         {
-            { "bookingIds", BookingIds },
-        };        
+            { "bookingIds", BookingIds }
+        };
     }
 
     public sealed class Data
-    {
-        
-        
+    {        
         [JsonProperty("BookingDetailsByBookingIds")]
-        public List<BookingDetailsByBookingIds> BookingDetailsByBookingIds { get; set; }
-    }
-
-    
-    /// <summary>Inner Model</summary> 
-    public sealed class BookingDetailsByBookingIds 
-    {
-        
-        
-        [JsonProperty("baseBooking")]
-        public BaseBooking BaseBooking { get; set; }
-        
-        
-        [JsonProperty("propertyBooking")]
-        public PropertyBooking PropertyBooking { get; set; }
+        public List<CrossProductBookingMeta> BookingDetailsByBookingIds { get; set; }
     }
     
-    /// <summary>Inner Model</summary> 
-    public sealed class BaseBooking 
+    public sealed class BaseBookingInfo 
     {
-        
-        
         [JsonProperty("bookingId")]
         public long BookingId { get; set; }
     }
     
-    /// <summary>Inner Model</summary> 
-    public sealed class PropertyBooking 
+    public sealed class PropertyRoom 
     {
-        
-        
-        [JsonProperty("checkinDate")]
-        public LocalDateTime? CheckinDate { get; set; }
-        
-        
-        [JsonProperty("checkoutDate")]
-        public LocalDateTime? CheckoutDate { get; set; }
-        
-        
-        [JsonProperty("bookingHotelRooms")]
-        public List<BookingHotelRooms> BookingHotelRooms { get; set; }
-        
-        
-        [JsonProperty("paymentModel")]
-        public int? PaymentModel { get; set; }
-        
-        
-        [JsonProperty("guests")]
-        public List<Guests> Guests { get; set; }
-        
-        
-        [JsonProperty("property")]
-        public Property Property { get; set; }
-        
-        
-        [JsonProperty("dmc")]
-        public Dmc Dmc { get; set; }
-        
-        
-        [JsonProperty("resellBookingFeature")]
-        public ResellBookingFeature ResellBookingFeature { get; set; }
-        
-        
-        [JsonProperty("acknowledge")]
-        public Acknowledge Acknowledge { get; set; }
-        
-        
-        [JsonProperty("occupancy")]
-        public Occupancy Occupancy { get; set; }
-        
-        
-        [JsonProperty("resellBooking")]
-        public ResellBooking ResellBooking { get; set; }
-    }
-    
-    /// <summary>Inner Model</summary> 
-    public sealed class BookingHotelRooms 
-    {
-        
-        
         [JsonProperty("roomTypeId")]
         public int? RoomTypeId { get; set; }
     }
     
-    /// <summary>Inner Model</summary> 
-    public sealed class Guests 
+    public sealed class PropertyGuest 
     {
-        
-        
         [JsonProperty("firstName")]
         public string FirstName { get; set; }
-        
-        
         [JsonProperty("lastName")]
         public string LastName { get; set; }
-        
-        
         [JsonProperty("guestNo")]
         public int GuestNo { get; set; }
     }
     
-    /// <summary>Inner Model</summary> 
-    public sealed class Property 
+    public sealed class PropertyInfo 
     {
-        
-        
         [JsonProperty("hotelId")]
         public int HotelId { get; set; }
     }
     
-    /// <summary>Inner Model</summary> 
-    public sealed class Dmc 
+    public sealed class PropertyDmc 
     {
-        
-        
         [JsonProperty("dmcId")]
         public int? DmcId { get; set; }
     }
     
-    /// <summary>Inner Model</summary> 
-    public sealed class ResellBookingFeature 
+    public sealed class SmartFlexBookingQueryInput 
     {
-        
-        
-        [JsonProperty("smartFlex")]
-        public SmartFlex SmartFlex { get; set; }
+        [JsonProperty("smartFlexScenario")]
+        public int? SmartFlexScenario { get; set; }
     }
     
-    /// <summary>Inner Model</summary> 
-    public sealed class SmartFlex 
+    public sealed class ReplacementBooking 
     {
-        
-        
+        [JsonProperty("smartFlexScenario")]
+        public int? SmartFlexScenario { get; set; }
+    }
+    
+    public sealed class SmartFlexQueryInput 
+    {
         [JsonProperty("smartFlexBooking")]
-        public SmartFlexBooking SmartFlexBooking { get; set; }
-        
-        
+        public SmartFlexBookingQueryInput SmartFlexBooking { get; set; }
         [JsonProperty("replacementBooking")]
         public ReplacementBooking ReplacementBooking { get; set; }
     }
     
-    /// <summary>Inner Model</summary> 
-    public sealed class SmartFlexBooking 
+    public sealed class ResellBookingFeatureQueryInput 
     {
-        
-        
-        [JsonProperty("smartFlexScenario")]
-        public int? SmartFlexScenario { get; set; }
+        [JsonProperty("smartFlex")]
+        public SmartFlexQueryInput SmartFlex { get; set; }
     }
     
-    /// <summary>Inner Model</summary> 
-    public sealed class ReplacementBooking 
+    public sealed class PropertyBookingAcknowledge 
     {
-        
-        
-        [JsonProperty("smartFlexScenario")]
-        public int? SmartFlexScenario { get; set; }
-    }
-    
-    /// <summary>Inner Model</summary> 
-    public sealed class Acknowledge 
-    {
-        
-        
         [JsonProperty("ackTypeId")]
         public int AckTypeId { get; set; }
     }
     
-    /// <summary>Inner Model</summary> 
-    public sealed class Occupancy 
+    public sealed class OccupancyInfo 
     {
-        
-        
         [JsonProperty("numberOfAdults")]
         public int NumberOfAdults { get; set; }
-        
-        
         [JsonProperty("numberOfChildren")]
         public int NumberOfChildren { get; set; }
     }
     
-    /// <summary>Inner Model</summary> 
-    public sealed class ResellBooking 
+    public sealed class BookingGuest 
     {
-        
-        
-        [JsonProperty("resellBookingId")]
-        public int? ResellBookingId { get; set; }
-        
-        
-        [JsonProperty("resellStatusId")]
-        public int ResellStatusId { get; set; }
-        
-        
-        [JsonProperty("resellTypeId")]
-        public int? ResellTypeId { get; set; }
-        
-        
-        [JsonProperty("guestInfo")]
-        public GuestInfo GuestInfo { get; set; }
-    }
-    
-    /// <summary>Inner Model</summary> 
-    public sealed class GuestInfo 
-    {
-        
-        
-        [JsonProperty("guests")]
-        public List<_Guests> Guests { get; set; }
-    }
-    
-    /// <summary>Inner Model</summary> 
-    public sealed class _Guests 
-    {
-        
-        
         [JsonProperty("firstName")]
         public string FirstName { get; set; }
-        
-        
         [JsonProperty("lastName")]
         public string LastName { get; set; }
     }
+    
+    public sealed class EnigmaGuestInfo 
+    {
+        [JsonProperty("guests")]
+        public List<BookingGuest> Guests { get; set; }
+    }
+    
+    public sealed class ResellBookingDetails 
+    {
+        [JsonProperty("resellBookingId")]
+        public int? ResellBookingId { get; set; }
+        [JsonProperty("resellStatusId")]
+        public int ResellStatusId { get; set; }
+        [JsonProperty("resellTypeId")]
+        public int? ResellTypeId { get; set; }
+        [JsonProperty("guestInfo")]
+        public EnigmaGuestInfo GuestInfo { get; set; }
+    }
+    
+    public sealed class PropertyBooking 
+    {
+        [JsonProperty("checkinDate")]
+        public DateTime? CheckinDate { get; set; }
+        [JsonProperty("checkoutDate")]
+        public DateTime? CheckoutDate { get; set; }
+        [JsonProperty("bookingHotelRooms")]
+        public List<PropertyRoom> BookingHotelRooms { get; set; }
+        [JsonProperty("paymentModel")]
+        public int? PaymentModel { get; set; }
+        [JsonProperty("guests")]
+        public List<PropertyGuest> Guests { get; set; }
+        [JsonProperty("property")]
+        public PropertyInfo Property { get; set; }
+        [JsonProperty("dmc")]
+        public PropertyDmc Dmc { get; set; }
+        [JsonProperty("resellBookingFeature")]
+        public ResellBookingFeatureQueryInput ResellBookingFeature { get; set; }
+        [JsonProperty("acknowledge")]
+        public PropertyBookingAcknowledge Acknowledge { get; set; }
+        [JsonProperty("occupancy")]
+        public OccupancyInfo Occupancy { get; set; }
+        [JsonProperty("resellBooking")]
+        public ResellBookingDetails ResellBooking { get; set; }
+    }
+    
+    public sealed class CrossProductBookingMeta 
+    {
+        [JsonProperty("baseBooking")]
+        public BaseBookingInfo BaseBooking { get; set; }
+        [JsonProperty("propertyBooking")]
+        public PropertyBooking PropertyBooking { get; set; }
+    }
+
 }
-
-#endregion
-
