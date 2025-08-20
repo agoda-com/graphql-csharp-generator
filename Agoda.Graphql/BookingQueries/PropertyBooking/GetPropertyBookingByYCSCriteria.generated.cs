@@ -150,7 +150,7 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking
         public SmartFlex SmartFlex { get; set; }
     }
     
-    public sealed class Guests 
+    public sealed class GuestInfoGuests 
     {
         [JsonProperty("firstName")]
         public string FirstName { get; set; }
@@ -161,7 +161,7 @@ namespace Agoda.Graphql.BookingQueries.PropertyBooking
     public sealed class GuestInfo 
     {
         [JsonProperty("guests")]
-        public List<Guests> Guests { get; set; }
+        public List<GuestInfoGuests> Guests { get; set; }
     }
     
     public sealed class ResellBooking 

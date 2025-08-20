@@ -334,7 +334,7 @@ ${properties.join('\n')}
 };
 
 // Helper function to parse selection set recursively
-const parseSelectionSet = (selectionSet: SelectionSetNode | undefined, parentType: GraphQLType | null = null, responseClasses: Set<string> = new Set(), schema: GraphQLSchema | null = null): Property[] => {
+const parseSelectionSet = (selectionSet: SelectionSetNode | undefined, parentType: GraphQLType | null = null, responseClasses: Set<string> = new Set(), schema: GraphQLSchema | null = null, parentFieldName: string = '', existingClassNames: Set<string> = new Set()): Property[] => {
   if (!selectionSet || !selectionSet.selections) return [];
   const properties: Property[] = [];
   
@@ -359,13 +359,19 @@ const parseSelectionSet = (selectionSet: SelectionSetNode | undefined, parentTyp
       
       // If this field has a selection set, it's a complex type
       if (selection.selectionSet) {
-        // Always use field name in PascalCase to avoid conflicts when same schema type is used by different fields
+        // Generate unique class name by combining parent field name if there's a duplicate
         let nestedClassName = pascalFieldName;
         let nestedType = null;
 
         if (fieldType) {
           nestedType = getNamedType(fieldType);
         }
+        
+        // Check if this class name already exists and combine with parent field name if needed
+        if (existingClassNames.has(nestedClassName) && parentFieldName) {
+          nestedClassName = toPascalCase(parentFieldName) + nestedClassName;
+        }
+        existingClassNames.add(nestedClassName);
         
         // Determine if it's a list and set the correct C# type
         if (fieldType) {
@@ -387,7 +393,7 @@ const parseSelectionSet = (selectionSet: SelectionSetNode | undefined, parentTyp
         
         // Parse nested selection set recursively to only generate used classes
         if (selection.selectionSet) {
-          const nestedProperties = parseSelectionSet(selection.selectionSet, nestedType, responseClasses, schema);
+          const nestedProperties = parseSelectionSet(selection.selectionSet, nestedType, responseClasses, schema, fieldName, existingClassNames);
           
           // Generate only the specific class for this selection set
           const classProperties = nestedProperties.map(prop => 
@@ -535,7 +541,7 @@ export const plugin: PluginFunction<AgodaCSharpCodegenConfig> = (
             }
             
             // Get properties for Data class and generate response classes
-            mainDataProperties = parseSelectionSet(node.selectionSet, rootType, responseClasses, schema);
+            mainDataProperties = parseSelectionSet(node.selectionSet, rootType, responseClasses, schema, '', new Set());
           }
         }
       });
