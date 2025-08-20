@@ -264,7 +264,35 @@ const generateClassFromGraphQLType = (
       const pascalFieldName = toPascalCase(fieldName);
       
       // Convert the GraphQL type to C# type
-      const csharpType = convertGraphQLTypeToCSharp(field.type, schema);
+      // For complex types, use field-based naming to avoid conflicts
+      let csharpType = convertGraphQLTypeToCSharp(field.type, schema);
+      
+      // For input types, use schema type names; for response types, use field-based naming
+      let fieldType = field.type;
+      while (isNonNullType(fieldType) || isListType(fieldType)) {
+        fieldType = fieldType.ofType;
+      }
+      const fieldTypeName = fieldType.name;
+      
+      if (!isScalarType(fieldTypeName) && !isEnumTypeFromSchema(schema, fieldTypeName)) {
+        if (isInputType) {
+          // For input types, use schema type names to maintain consistency
+          const schemaTypeName = toPascalCase(fieldTypeName);
+          if (isListType(field.type)) {
+            csharpType = `List<${schemaTypeName}>`;
+          } else {
+            csharpType = schemaTypeName;
+          }
+        } else {
+          // For response types, use field-based naming to avoid conflicts
+          const fieldBasedTypeName = toPascalCase(fieldName);
+          if (isListType(field.type)) {
+            csharpType = `List<${fieldBasedTypeName}>`;
+          } else {
+            csharpType = fieldBasedTypeName;
+          }
+        }
+      }
       
       // Check if this field uses another custom type that needs to be generated
       let currentType = field.type;
@@ -313,7 +341,9 @@ const parseSelectionSet = (selectionSet: SelectionSetNode | undefined, parentTyp
   selectionSet.selections.forEach(selection => {
     if (selection.kind === 'Field') {
       const fieldName = selection.name.value;
-      const pascalFieldName = toPascalCase(fieldName);
+      // Use alias if available, otherwise use field name
+      const className = selection.alias ? selection.alias.value : fieldName;
+      const pascalFieldName = toPascalCase(className);
       
       // Get actual field type from schema
       let csharpType = 'string'; // fallback
@@ -329,15 +359,12 @@ const parseSelectionSet = (selectionSet: SelectionSetNode | undefined, parentTyp
       
       // If this field has a selection set, it's a complex type
       if (selection.selectionSet) {
-        // Generate class name based on field name to avoid conflicts when same schema type is used by different fields
+        // Always use field name in PascalCase to avoid conflicts when same schema type is used by different fields
         let nestedClassName = pascalFieldName;
         let nestedType = null;
 
         if (fieldType) {
           nestedType = getNamedType(fieldType);
-          if (nestedType && nestedType.name) {
-            nestedClassName = toPascalCase(nestedType.name);
-          }
         }
         
         // Determine if it's a list and set the correct C# type

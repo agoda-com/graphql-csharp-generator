@@ -38,10 +38,10 @@ namespace Agoda.Graphql.BookingQueries.DiscountBreakdown
     public sealed class Data
     {        
         [JsonProperty("DiscountBreakdownByBookingIds")]
-        public List<DiscountBreakdown> DiscountBreakdownByBookingIds { get; set; }
+        public List<DiscountBreakdownByBookingIds> DiscountBreakdownByBookingIds { get; set; }
     }
     
-    public sealed class DiscountBreakdown 
+    public sealed class DiscountBreakdownByBookingIds 
     {
         [JsonProperty("bookingId")]
         public long BookingId { get; set; }
