@@ -1,0 +1,16 @@
+﻿query GetAvailabilities($propertyId: String!, $dmcId: Int!, $roomTypeId: String, $startDate: Date!, $endDate: Date!) {
+    Availabilities(hotelId: $propertyId, dmcId: $dmcId, roomTypeId: $roomTypeId, startDate: $startDate, endDate: $endDate) {
+        propertyId
+        roomId
+        dmcId
+        date
+        regularAllotment
+        regularAllotmentUsed
+        guaranteedAllotment
+        guaranteedAllotmentUsed
+        createdBy
+        createdWhen
+        modifiedBy
+        modifiedWhen
+    }
+}
