@@ -412,7 +412,7 @@ ${classProperties}
       }
       
       properties.push({
-        name: fieldName,
+        name: selection.alias ? selection.alias.value : fieldName,
         pascalName: pascalFieldName,
         type: csharpType
       });
