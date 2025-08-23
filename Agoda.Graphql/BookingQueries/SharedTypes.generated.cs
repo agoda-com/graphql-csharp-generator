@@ -55,5 +55,4 @@ namespace Agoda.Graphql.BookingQueries
 
     }
 
-
 }
