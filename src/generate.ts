@@ -84,7 +84,7 @@ schema: "${schemaUrl}"
 `
     }
     config += `        plugins:
-            - "./dist/agoda-csharp-shared.js"
+            - "agoda-graphql-csharp-generator/shared"
         config:
             namespace: "${sharedTypesNamespace}"
 `
@@ -106,7 +106,7 @@ schema: "${schemaUrl}"
         documents:
             - "${normalizedGraphqlFile}"
         plugins:
-            - "./dist/agoda-csharp-codegen.js"
+            - "agoda-graphql-csharp-generator/codegen"
         config:
             namespace: "${namespace}"
             sharedTypesNamespace: "${sharedTypesNamespace}"

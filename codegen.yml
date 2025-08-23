@@ -31,7 +31,7 @@ generates:
         documents:
             - "Agoda.Graphql/BookingQueries/DiscountBreakdown/DiscountBreakdownByBookingId.graphql"
         plugins:
-            - "./dist/agoda-csharp-codegen.js"
+            - "agoda-graphql-csharp-generator/codegen"
         config:
             namespace: "Agoda.Graphql.BookingQueries.DiscountBreakdown"
             sharedTypesNamespace: "Agoda.Graphql.BookingQueries"
@@ -39,7 +39,7 @@ generates:
         documents:
             - "Agoda.Graphql/BookingQueries/GetBookingDetailsByBookingId.graphql"
         plugins:
-            - "./dist/agoda-csharp-codegen.js"
+            - "agoda-graphql-csharp-generator/codegen"
         config:
             namespace: "Agoda.Graphql.BookingQueries"
             sharedTypesNamespace: "Agoda.Graphql.BookingQueries"
@@ -47,7 +47,7 @@ generates:
         documents:
             - "Agoda.Graphql/BookingQueries/PropertyBooking/GetBookingListByBookingIds.graphql"
         plugins:
-            - "./dist/agoda-csharp-codegen.js"
+            - "agoda-graphql-csharp-generator/codegen"
         config:
             namespace: "Agoda.Graphql.BookingQueries.PropertyBooking"
             sharedTypesNamespace: "Agoda.Graphql.BookingQueries"
@@ -55,7 +55,7 @@ generates:
         documents:
             - "Agoda.Graphql/BookingQueries/PropertyBooking/GetCsvData.graphql"
         plugins:
-            - "./dist/agoda-csharp-codegen.js"
+            - "agoda-graphql-csharp-generator/codegen"
         config:
             namespace: "Agoda.Graphql.BookingQueries.PropertyBooking"
             sharedTypesNamespace: "Agoda.Graphql.BookingQueries"
@@ -63,7 +63,7 @@ generates:
         documents:
             - "Agoda.Graphql/BookingQueries/PropertyBooking/GetCsvDataWithoutPagination.graphql"
         plugins:
-            - "./dist/agoda-csharp-codegen.js"
+            - "agoda-graphql-csharp-generator/codegen"
         config:
             namespace: "Agoda.Graphql.BookingQueries.PropertyBooking"
             sharedTypesNamespace: "Agoda.Graphql.BookingQueries"
