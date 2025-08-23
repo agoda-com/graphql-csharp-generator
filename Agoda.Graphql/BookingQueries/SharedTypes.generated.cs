@@ -6,53 +6,55 @@ using Agoda.Graphql;
 
 namespace Agoda.Graphql.BookingQueries
 {
-    public sealed class BookingDisountsByBookingIds
+    public enum AcknowledgementRequestType 
     {
-        [JsonProperty("BookingDetailsByBookingIds")]
-        public BookingDetailsByBookingIds BookingDetailsByBookingIds { get; set; }
-
+        All,
+        AmendBooking,
+        CancelBooking,
+        ConfirmBooking
     }
 
-    public sealed class BookingDetailsByBookingIds
+    public sealed class DateRange 
     {
+        [JsonProperty("from")]
+        public DateTime From { get; set; }
+        [JsonProperty("to")]
+        public DateTime To { get; set; }
+    }
+
+    public sealed class YCSCriteria 
+    {
+        [JsonProperty("ackRequestTypes")]
+        public List<AcknowledgementRequestType>? AckRequestTypes { get; set; }
+        [JsonProperty("acknowledgementId")]
+        public string AcknowledgementId { get; set; }
+        [JsonProperty("blacklistDmcIds")]
+        public List<int>? BlacklistDmcIds { get; set; }
+        [JsonProperty("bookingDatePeriod")]
+        public DateRange BookingDatePeriod { get; set; }
         [JsonProperty("bookingId")]
-        public String BookingId { get; set; }
-
-        [JsonProperty("propertyBooking")]
-        public PropertyBooking PropertyBooking { get; set; }
-
+        public int? BookingId { get; set; }
+        [JsonProperty("customerName")]
+        public string CustomerName { get; set; }
+        [JsonProperty("hotelId")]
+        public int HotelId { get; set; }
+        [JsonProperty("lastUpdateDatePeriod")]
+        public DateRange LastUpdateDatePeriod { get; set; }
+        [JsonProperty("pageIndex")]
+        public int? PageIndex { get; set; }
+        [JsonProperty("pageSize")]
+        public int? PageSize { get; set; }
+        [JsonProperty("rateChannel")]
+        public int? RateChannel { get; set; }
+        [JsonProperty("ratePlan")]
+        public int? RatePlan { get; set; }
+        [JsonProperty("roomTypeId")]
+        public int? RoomTypeId { get; set; }
+        [JsonProperty("sorting")]
+        public string Sorting { get; set; }
+        [JsonProperty("stayDatePeriod")]
+        public DateRange StayDatePeriod { get; set; }
+        [JsonProperty("whitelistDmcIds")]
+        public List<int>? WhitelistDmcIds { get; set; }
     }
-
-    public sealed class PropertyBooking
-    {
-        [JsonProperty("bookingDiscounts")]
-        public BookingDiscounts BookingDiscounts { get; set; }
-
-    }
-
-    public sealed class BookingDiscounts
-    {
-        [JsonProperty("bookingId")]
-        public String BookingId { get; set; }
-
-        [JsonProperty("discountType")]
-        public String DiscountType { get; set; }
-
-        [JsonProperty("discountId")]
-        public String DiscountId { get; set; }
-
-        [JsonProperty("discountRateType")]
-        public String DiscountRateType { get; set; }
-
-        [JsonProperty("discountRate")]
-        public String DiscountRate { get; set; }
-
-        [JsonProperty("discountName")]
-        public String DiscountName { get; set; }
-
-        [JsonProperty("appliedDate")]
-        public String AppliedDate { get; set; }
-
-    }
-
 }
