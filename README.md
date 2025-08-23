@@ -15,9 +15,11 @@ npm install agoda-graphql-csharp-generator @graphql-codegen/cli graphql
 - automate job to create release and tags
 
 
-TODO:
-- create script to generate codegen.yml that accept
-```
---schema-url 'https://smapi-qa-http.privatecloud.qa.agoda.is/v2/graphql' --graphql-dir '../../src/Agoda.SupplyReporting.GraphQl/SupplyApi/Queries/DMCs' --graphql-project 'Agoda.SupplyReporting.GraphQl' --output-name
-```
-- in target project just run with gql-gen
+Found the Solution:
+- create custom plugin to generate share type class from schema
+    - pass list of graphql files
+    - create share type and use in each generated file
+- create custom plugin to generate query or mutation class using that share type
+- fix npm package to export 2 files
+- test with BAPI and SMAPI
+- make sure it's working with json converter

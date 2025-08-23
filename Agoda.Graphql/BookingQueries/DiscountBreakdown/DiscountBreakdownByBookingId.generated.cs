@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Agoda.Graphql;
+using Agoda.Graphql.BookingQueries;
 
 namespace Agoda.Graphql.BookingQueries.DiscountBreakdown
 {
@@ -58,5 +59,4 @@ namespace Agoda.Graphql.BookingQueries.DiscountBreakdown
         [JsonProperty("appliedDate")]
         public List<string> AppliedDate { get; set; }
     }
-
 }

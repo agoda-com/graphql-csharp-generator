@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Agoda.Graphql;
+using Agoda.Graphql.BookingQueries;
 
 namespace Agoda.Graphql.BookingQueries
 {
@@ -200,7 +201,7 @@ namespace Agoda.Graphql.BookingQueries
     
     public sealed class Benefits 
     {
-        [JsonProperty("benefits")]
+        [JsonProperty("benefitList")]
         public List<BenefitList> BenefitList { get; set; }
     }
     
@@ -355,5 +356,4 @@ namespace Agoda.Graphql.BookingQueries
         [JsonProperty("propertyBooking")]
         public PropertyBooking PropertyBooking { get; set; }
     }
-
 }
