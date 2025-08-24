@@ -16,10 +16,6 @@ npm install agoda-graphql-csharp-generator @graphql-codegen/cli graphql
 
 
 Found the Solution:
-- create custom plugin to generate share type class from schema
-    - pass list of graphql files
-    - create share type and use in each generated file
-- create custom plugin to generate query or mutation class using that share type
-- fix npm package to export 2 files
+- fix generated codegen config
 - test with BAPI and SMAPI
 - make sure it's working with json converter

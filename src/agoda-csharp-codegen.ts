@@ -37,7 +37,6 @@ const isEnumTypeFromSchema = (schema: GraphQLSchema, typeName: string): boolean 
 // Plugin configuration interface
 interface AgodaCSharpCodegenConfig {
   namespace?: string;
-  sharedTypesNamespace?: string;  
 }
 
 // Type definitions
@@ -190,11 +189,11 @@ const getFieldTypeFromSchema = (parentType: GraphQLType | null, fieldName: strin
 
 // Helper function to extract type name from TypeNode
 const extractTypeName = (typeNode: TypeNode): string => {
-  if (typeNode.kind === 'NamedType') {
+  if (typeNode.kind === Kind.NAMED_TYPE) {
     return typeNode.name.value;
-  } else if (typeNode.kind === 'NonNullType') {
+  } else if (typeNode.kind === Kind.NON_NULL_TYPE) {
     return extractTypeName(typeNode.type);
-  } else if (typeNode.kind === 'ListType') {
+  } else if (typeNode.kind === Kind.LIST_TYPE) {
     return extractTypeName(typeNode.type);
   }
   return 'Unknown';
@@ -439,7 +438,6 @@ export const plugin: PluginFunction<AgodaCSharpCodegenConfig> = (
     }
 
     const operation = operationsDefinitions[0];
-    const operationName = operation.name;
     const variables = operation.variables;
     const rawQuery = (operation.document.rawSDL || '').replace(/"/g, '""');
 
@@ -537,7 +535,6 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Agoda.Graphql;
-using ${config.sharedTypesNamespace};
 
 namespace ${namespace}
 {
