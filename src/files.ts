@@ -13,16 +13,3 @@ export const getFiles = async (dir: string, extensionName: string, files: string
     }
     return files
 }
-
-export const deleteFiles = async (listFiles: string[]): Promise<void> => {
-    await Promise.all(
-        listFiles.map(async (file) => {
-            try {
-                await fs.unlink(file)
-                console.log(`Deleted: ${file}`)
-            } catch (err) {
-                console.error(`Failed to delete ${file}:`, err)
-            }
-        })
-    )
-}
