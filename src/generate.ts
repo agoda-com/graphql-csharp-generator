@@ -152,21 +152,18 @@ export const run = async (): Promise<void> => {
     const ymlOut = getArgValue('--yml-out')
     const headers = getHeaderArgs()
 
-    if (!rawGraphqlDirectory || !schemaUrl) {
-        console.error('Usage: script --graphql-dir <dir> --schema-url <url> [--graphql-project <project-name>] [--yml-out <output-path>]')
+    if (!rawGraphqlDirectory || !schemaUrl || !graphqlProject) {
+        console.error('Usage: script --graphql-dir <dir> --schema-url <url> --graphql-project <project-name> [--header <name:value>] [--yml-out <output-path>]')
         process.exit(1)
     }
 
-    // Determine the config file path
-    const tempConfigPath = ymlOut ? path.resolve(ymlOut) : path.join(currentDir, 'codegen.yml')
+    const outputConfigFilePath = ymlOut ? path.resolve(ymlOut) : path.join(currentDir, 'codegen.yml')
 
     console.log('raw graphql directory: ', rawGraphqlDirectory)
     console.log('graphql schema url: ', schemaUrl)
-    if (graphqlProject) {
-        console.log('graphql project: ', graphqlProject)
-    }
+    console.log('graphql project: ', graphqlProject)
     if (ymlOut) {
-        console.log('yml output path: ', ymlOut)
+        console.log('yml output path: ', outputConfigFilePath)
     }
     if (headers.length > 0) {
         console.log('headers: ', headers)
@@ -186,9 +183,9 @@ export const run = async (): Promise<void> => {
         console.log('Creating dynamic config content...')
         const dynamicConfigContent = createDynamicConfig(schemaUrl, graphqlFiles, rawGraphqlDirectory, graphqlProject, headers)
 
-        const configFileName = path.basename(tempConfigPath)
-        console.log(`Creating ${configFileName} at:`, tempConfigPath)
-        await fs.writeFile(tempConfigPath, dynamicConfigContent, 'utf8')
+        const configFileName = path.basename(outputConfigFilePath)
+        console.log(`Creating ${configFileName} at:`, outputConfigFilePath)
+        await fs.writeFile(outputConfigFilePath, dynamicConfigContent, 'utf8')
         console.log(`Successfully created ${configFileName}`)
         
     } catch (error) {
