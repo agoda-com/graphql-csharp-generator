@@ -1,0 +1,10 @@
+query GetProductRecommendations($propertyId: Int!, $whiteLabelId: Int!, $includeInactive: Boolean!, $recommendationChannel: RecommendationChannel!, $productNames: [String!], $pagination: PaginationInput!) {
+    findProductRecommendations(hotelId: $propertyId, whiteLabelId: $whiteLabelId, includeInactive: $includeInactive, recommendationChannel: $recommendationChannel, productNames: $productNames, pagination: $pagination) {
+        recommendationId
+        productName
+        productCategoryName
+        recommendationScore
+        recommendationTraceId
+        activationParameters
+    }
+}
