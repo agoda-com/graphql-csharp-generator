@@ -1,0 +1,11 @@
+mutation UpsertChannelRecommendationAttribution(
+    $recommendationTraceInput: [RecommendationTraceInput!]!
+    $channelStatus: ChannelStatus!
+    $recommendationChannel: RecommendationChannel!) {
+  upsertChannelRecommendationAttributions (recommendationChannel: $recommendationChannel, channelStatus: $channelStatus, recommendationTraces: $recommendationTraceInput)
+  {
+    recommendationId
+    channelStatus
+    recommendationTraceId
+  }
+}

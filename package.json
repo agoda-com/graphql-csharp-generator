@@ -1,6 +1,6 @@
 {
   "name": "agoda-graphql-csharp-generator",
-  "version": "2.1.6",
+  "version": "2.1.7",
   "main": "dist/agoda-csharp-operation.js",
   "exports": {
     "./shared-types": "./dist/agoda-csharp-shared-types.js",
@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "generate-codegen-config": "ts-node ./src/generate.ts --schema-url 'https://smapi-qa-http.privatecloud.qa.agoda.is/v2/graphql' --graphql-dir './Agoda.Graphql/SupplyApi/Queries' --graphql-project 'Agoda.Graphql' --yml-out './codegen.yml'",
+    "generate-codegen-config-engage": "ts-node ./src/generate.ts --schema-url 'https://engagev4-server-qa.privatecloud.qa.agoda.is/graphql' --graphql-dir './Agoda.Graphql/EngageConnect/Queries' --graphql-project 'Agoda.Graphql' --yml-out './codegen.yml'",
     "generate-codegen-config-with-headers": "ts-node ./src/generate.ts --schema-url 'http://booking-query-high-qa.privatecloud.qa.agoda.is' --graphql-dir './Agoda.Graphql/BookingQueries' --graphql-project 'Agoda.Graphql.BookingQueries' --yml-out './codegen.yml'  --header 'API-Key: xxx' --header 'Client-ID: xxx'",
     "generate-graphql-csharp": "gql-gen --config codegen.yml",
     "build": "tsc"

@@ -1,0 +1,8 @@
+query ChannelRecommendationAttributionsEnum($propertyId: Int!, $whiteLabelId: Int!, $includeInactive: Boolean!, $recommendationChannel: RecommendationChannel!, $productCategoryNames: [String!]) {
+  findProductRecommendations(hotelId: $propertyId, whiteLabelId: $whiteLabelId, includeInactive: $includeInactive, recommendationChannel: $recommendationChannel, productCategoryNames: $productCategoryNames) {
+    recommendationId    
+    channelRecommendationAttributions{
+      recommendationChannel
+    }
+  }
+}
