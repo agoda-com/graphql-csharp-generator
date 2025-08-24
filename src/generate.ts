@@ -69,11 +69,34 @@ schema: "${schemaUrl}"
     
     // Generate shared types section first
     // Use the graphqlDir to determine both the output path and namespace
-    // Clean up the path by removing leading ./ and converting separators to dots
-    const cleanGraphqlDir = graphqlDir.replace(/^\.\//, '').replace(/[\/\\]/g, '.')
-    const sharedTypesNamespace = cleanGraphqlDir
+    
+    // For output path, use the original graphqlDir
     const sharedTypesOutputFile = `${graphqlDir}/SharedTypes.generated.cs`
     const normalizedSharedTypesOutputFile = sharedTypesOutputFile.replace(/\\/g, '/')
+    
+    // For namespace, clean up the path and handle project name matching
+    const cleanGraphqlDir = graphqlDir.replace(/^\.\//, '').replace(/[\/\\]/g, '.')
+    let sharedTypesNamespace: string
+    
+    if (projectName) {
+        // If project name is provided, find the matching part in the graphqlDir and use it + the rest
+        const cleanGraphqlDirWithoutPrefix = cleanGraphqlDir.replace(/^(\.\.\/)+/, '').replace(/^\.\//, '')
+        const projectNameDots = projectName.replace(/[\/\\]/g, '.')
+        
+        // Find where the project name appears in the clean path
+        const projectIndex = cleanGraphqlDirWithoutPrefix.indexOf(projectNameDots)
+        
+        if (projectIndex !== -1) {
+            // Use the project name + everything after it
+            sharedTypesNamespace = cleanGraphqlDirWithoutPrefix.substring(projectIndex)
+        } else {
+            // If project name not found, use the full cleaned path as namespace
+            sharedTypesNamespace = cleanGraphqlDirWithoutPrefix
+        }
+    } else {
+        // Remove any relative path parts for namespace - make it generic
+        sharedTypesNamespace = cleanGraphqlDir.replace(/^(\.\.\/)+/, '').replace(/^\.\//, '')
+    }
     
     config += `    ${normalizedSharedTypesOutputFile}:
         documents:
@@ -84,7 +107,7 @@ schema: "${schemaUrl}"
 `
     }
     config += `        plugins:
-            - "agoda-graphql-csharp-generator/shared"
+            - "agoda-graphql-csharp-generator/shared-types"
         config:
             namespace: "${sharedTypesNamespace}"
 `
@@ -106,10 +129,9 @@ schema: "${schemaUrl}"
         documents:
             - "${normalizedGraphqlFile}"
         plugins:
-            - "agoda-graphql-csharp-generator/codegen"
+            - "agoda-graphql-csharp-generator/operation"
         config:
             namespace: "${namespace}"
-            sharedTypesNamespace: "${sharedTypesNamespace}"
 `
     }
     
