@@ -1,6 +1,6 @@
 {
   "name": "agoda-graphql-csharp-generator",
-  "version": "2.1.6",
+  "version": "2.1.7",
   "main": "dist/agoda-csharp-operation.js",
   "exports": {
     "./shared-types": "./dist/agoda-csharp-shared-types.js",
