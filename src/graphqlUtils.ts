@@ -1,4 +1,4 @@
-import { Kind, TypeNode } from "graphql";
+import { Kind, TypeNode, GraphQLSchema, isEnumType } from "graphql";
 import { SCALAR_TYPES } from "./constants";
 
 export const extractTypeName = (typeNode: TypeNode): string => {
@@ -14,4 +14,13 @@ export const extractTypeName = (typeNode: TypeNode): string => {
 
 export const isScalarType = (typeName: string): boolean => {
     return SCALAR_TYPES.includes(typeName);
+};
+
+export const isEnumTypeFromSchema = (schema: GraphQLSchema, typeName: string): boolean => {
+    try {
+        const graphqlType = schema.getType(typeName);
+        return !!(graphqlType && isEnumType(graphqlType));
+    } catch (error) {
+        return false;
+    }
 };

@@ -1,34 +1,18 @@
 import { 
     visit, 
-    Kind, 
     isNonNullType, 
     isListType, 
     getNamedType, 
     typeFromAST,
     GraphQLSchema,
-    SelectionSetNode,
-    VariableDefinitionNode,
     GraphQLType,
-    GraphQLObjectType,
-    isObjectType,
-    isEnumType,
-    TypeNode
+    TypeNode,
+    Kind
 } from 'graphql';
 import { PluginFunction, Types } from '@graphql-codegen/plugin-helpers'
-import { isScalarType } from './graphqlUtils';
+import { isScalarType, isEnumTypeFromSchema } from './graphqlUtils';
 import { mapGraphQLTypeToCSharp, toPascalCase } from './naming';
 import { extractTypeName } from './graphqlUtils';
-
-
-// Helper function to check if a type is an enum
-const isEnumTypeFromSchema = (schema: GraphQLSchema, typeName: string): boolean => {
-    try {
-        const graphqlType = schema.getType(typeName);
-        return !!(graphqlType && isEnumType(graphqlType));
-    } catch (error) {
-        return false;
-    }
-};
 
 // Plugin configuration interface
 interface AgodaCSharpSharedConfig {
@@ -48,7 +32,7 @@ const convertGraphQLTypeToCSharp = (input: GraphQLType | TypeNode, schema: Graph
         
         if (!convertedType) {
             // Fallback to old method if conversion fails
-            const typeName = input.kind === 'NamedType' ? (input as any).name.value : 'object';
+            const typeName = input.kind === Kind.NAMED_TYPE ? (input as any).name.value : 'object';
             return toPascalCase(typeName);
         }
         schemaType = convertedType;
