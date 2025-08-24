@@ -5,7 +5,7 @@ headers:
     API-Key: "uTSpgQLr9ZyuMSPCVca70SciyTtwBPaqTCsxSTBmrYDo8Opnp5"
     Client-ID: 23
 generates:
-    Agoda.Graphql.BookingQueries/SharedTypes.generated.cs:
+    ./Agoda.Graphql/BookingQueries/SharedTypes.generated.cs:
         documents:
             - "Agoda.Graphql/BookingQueries/DiscountBreakdown/BookingDiscountsByBookingIds.graphql"
             - "Agoda.Graphql/BookingQueries/DiscountBreakdown/DiscountBreakdownByBookingId.graphql"
@@ -16,62 +16,62 @@ generates:
             - "Agoda.Graphql/BookingQueries/PropertyBooking/GetCsvMetaData.graphql"
             - "Agoda.Graphql/BookingQueries/PropertyBooking/GetPropertyBookingByYCSCriteria.graphql"
         plugins:
-            - "agoda-graphql-csharp-generator/shared"
+            - "agoda-graphql-csharp-generator/shared-types"
         config:
             namespace: "Agoda.Graphql.BookingQueries"
     Agoda.Graphql/BookingQueries/DiscountBreakdown/BookingDiscountsByBookingIds.generated.cs:
         documents:
             - "Agoda.Graphql/BookingQueries/DiscountBreakdown/BookingDiscountsByBookingIds.graphql"
         plugins:
-            - "agoda-graphql-csharp-generator/codegen"
+            - "agoda-graphql-csharp-generator/operation"
         config:
             namespace: "Agoda.Graphql.BookingQueries.DiscountBreakdown"
     Agoda.Graphql/BookingQueries/DiscountBreakdown/DiscountBreakdownByBookingId.generated.cs:
         documents:
             - "Agoda.Graphql/BookingQueries/DiscountBreakdown/DiscountBreakdownByBookingId.graphql"
         plugins:
-            - "agoda-graphql-csharp-generator/codegen"
+            - "agoda-graphql-csharp-generator/operation"
         config:
             namespace: "Agoda.Graphql.BookingQueries.DiscountBreakdown"
     Agoda.Graphql/BookingQueries/GetBookingDetailsByBookingId.generated.cs:
         documents:
             - "Agoda.Graphql/BookingQueries/GetBookingDetailsByBookingId.graphql"
         plugins:
-            - "agoda-graphql-csharp-generator/codegen"
+            - "agoda-graphql-csharp-generator/operation"
         config:
             namespace: "Agoda.Graphql.BookingQueries"
     Agoda.Graphql/BookingQueries/PropertyBooking/GetBookingListByBookingIds.generated.cs:
         documents:
             - "Agoda.Graphql/BookingQueries/PropertyBooking/GetBookingListByBookingIds.graphql"
         plugins:
-            - "agoda-graphql-csharp-generator/codegen"
+            - "agoda-graphql-csharp-generator/operation"
         config:
             namespace: "Agoda.Graphql.BookingQueries.PropertyBooking"
     Agoda.Graphql/BookingQueries/PropertyBooking/GetCsvData.generated.cs:
         documents:
             - "Agoda.Graphql/BookingQueries/PropertyBooking/GetCsvData.graphql"
         plugins:
-            - "agoda-graphql-csharp-generator/codegen"
+            - "agoda-graphql-csharp-generator/operation"
         config:
             namespace: "Agoda.Graphql.BookingQueries.PropertyBooking"
     Agoda.Graphql/BookingQueries/PropertyBooking/GetCsvDataWithoutPagination.generated.cs:
         documents:
             - "Agoda.Graphql/BookingQueries/PropertyBooking/GetCsvDataWithoutPagination.graphql"
         plugins:
-            - "agoda-graphql-csharp-generator/codegen"
+            - "agoda-graphql-csharp-generator/operation"
         config:
             namespace: "Agoda.Graphql.BookingQueries.PropertyBooking"
     Agoda.Graphql/BookingQueries/PropertyBooking/GetCsvMetaData.generated.cs:
         documents:
             - "Agoda.Graphql/BookingQueries/PropertyBooking/GetCsvMetaData.graphql"
         plugins:
-            - "agoda-graphql-csharp-generator/codegen"
+            - "agoda-graphql-csharp-generator/operation"
         config:
             namespace: "Agoda.Graphql.BookingQueries.PropertyBooking"
     Agoda.Graphql/BookingQueries/PropertyBooking/GetPropertyBookingByYCSCriteria.generated.cs:
         documents:
             - "Agoda.Graphql/BookingQueries/PropertyBooking/GetPropertyBookingByYCSCriteria.graphql"
         plugins:
-            - "agoda-graphql-csharp-generator/codegen"
+            - "agoda-graphql-csharp-generator/operation"
         config:
             namespace: "Agoda.Graphql.BookingQueries.PropertyBooking"

@@ -85,12 +85,13 @@ schema: "${schemaUrl}"
         
         // Find where the project name appears in the clean path
         const projectIndex = cleanGraphqlDirWithoutPrefix.indexOf(projectNameDots)
+        
         if (projectIndex !== -1) {
             // Use the project name + everything after it
             sharedTypesNamespace = cleanGraphqlDirWithoutPrefix.substring(projectIndex)
         } else {
-            // Fallback to just the project name
-            sharedTypesNamespace = projectNameDots
+            // If project name not found, use the full cleaned path as namespace
+            sharedTypesNamespace = cleanGraphqlDirWithoutPrefix
         }
     } else {
         // Remove any relative path parts for namespace - make it generic
@@ -106,9 +107,9 @@ schema: "${schemaUrl}"
 `
     }
     config += `        plugins:
-            - "agoda-graphql-csharp-generator/shared"
+            - "agoda-graphql-csharp-generator/shared-types"
         config:
-            namespace: "${cleanGraphqlDir}"
+            namespace: "${sharedTypesNamespace}"
 `
     
     // Generate individual sections for each GraphQL file
@@ -128,7 +129,7 @@ schema: "${schemaUrl}"
         documents:
             - "${normalizedGraphqlFile}"
         plugins:
-            - "agoda-graphql-csharp-generator/codegen"
+            - "agoda-graphql-csharp-generator/operation"
         config:
             namespace: "${namespace}"
 `
