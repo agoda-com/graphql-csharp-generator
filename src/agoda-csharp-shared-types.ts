@@ -15,14 +15,10 @@ import {
     TypeNode
 } from 'graphql';
 import { PluginFunction, Types } from '@graphql-codegen/plugin-helpers'
+import { isScalarType } from './graphqlUtils';
+import { mapGraphQLTypeToCSharp, toPascalCase } from './naming';
+import { extractTypeName } from './graphqlUtils';
 
-// Constants
-const SCALAR_TYPES = ['String', 'Int', 'Float', 'Boolean', 'ID', 'Date', 'DateTime', 'LocalDate', 'LocalDateTime', 'BigInt', 'BigDecimal', 'Long'];
-
-// Helper function to check if a type is a scalar
-const isScalarType = (typeName: string): boolean => {
-    return SCALAR_TYPES.includes(typeName);
-};
 
 // Helper function to check if a type is an enum
 const isEnumTypeFromSchema = (schema: GraphQLSchema, typeName: string): boolean => {
@@ -38,11 +34,6 @@ const isEnumTypeFromSchema = (schema: GraphQLSchema, typeName: string): boolean 
 interface AgodaCSharpSharedConfig {
     namespace?: string;
 }
-
-const toPascalCase = (str: string): string => {
-    if (!str || typeof str !== 'string') return '';
-    return str.charAt(0).toUpperCase() + str.slice(1);
-};
 
 const convertGraphQLTypeToCSharp = (input: GraphQLType | TypeNode, schema: GraphQLSchema | null = null): string => {
     let schemaType: GraphQLType;
@@ -92,24 +83,7 @@ const convertGraphQLTypeToCSharp = (input: GraphQLType | TypeNode, schema: Graph
     const typeName = getNamedType(currentType).name;
     
     // Map GraphQL scalar types to C# types
-    let csharpType;
-    switch (typeName) {
-        case 'String': csharpType = 'string'; break;
-        case 'Int': csharpType = 'int'; break;
-        case 'BigInt': csharpType = 'long'; break;
-        case 'BigDecimal': csharpType = 'decimal'; break;
-        case 'Long': csharpType = 'long'; break;
-        case 'Float': csharpType = 'double'; break;
-        case 'Boolean': csharpType = 'bool'; break;
-        case 'Date': csharpType = 'DateTime'; break;
-        case 'DateTime': csharpType = 'DateTime'; break;
-        case 'ID': csharpType = 'string'; break;
-        case 'LocalDate': csharpType = 'DateTime'; break;
-        case 'LocalDateTime': csharpType = 'DateTime'; break;
-        default: 
-            csharpType = toPascalCase(typeName); 
-            break;
-    }
+    let csharpType = mapGraphQLTypeToCSharp(typeName);
     
     // Handle nullability and lists
     if (isList) {
@@ -121,18 +95,6 @@ const convertGraphQLTypeToCSharp = (input: GraphQLType | TypeNode, schema: Graph
     }
     
     return csharpType;
-};
-
-// Helper function to extract type name from TypeNode
-const extractTypeName = (typeNode: TypeNode): string => {
-    if (typeNode.kind === 'NamedType') {
-        return typeNode.name.value;
-    } else if (typeNode.kind === 'NonNullType') {
-        return extractTypeName(typeNode.type);
-    } else if (typeNode.kind === 'ListType') {
-        return extractTypeName(typeNode.type);
-    }
-    return 'Unknown';
 };
 
 // Function to generate C# enum from GraphQL enum
