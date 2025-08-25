@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using Agoda.Graphql;
 
 namespace Agoda.Graphql.SupplyApi.Queries.Rooms.GetRoomById
@@ -44,22 +45,17 @@ namespace Agoda.Graphql.SupplyApi.Queries.Rooms.GetRoomById
     }
     
     public sealed class Room 
-    {        
+    {
         [JsonProperty("id")]
         public int Id { get; set; }
-        
         [JsonProperty("dmcRoomId")]
         public string DmcRoomId { get; set; }
-        
         [JsonProperty("allotmentAutoTopup")]
         public int? AllotmentAutoTopup { get; set; }
-        
         [JsonProperty("noOfRoom")]
         public int? NoOfRoom { get; set; }
-        
         [JsonProperty("hotelRoomTypeId")]
         public int HotelRoomTypeId { get; set; }
-        
         [JsonProperty("inventoryTypeId")]
         public int? InventoryTypeId { get; set; }
     }

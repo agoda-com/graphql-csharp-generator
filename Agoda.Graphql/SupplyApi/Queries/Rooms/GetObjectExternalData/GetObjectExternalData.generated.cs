@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using Agoda.Graphql;
 
 namespace Agoda.Graphql.SupplyApi.Queries.Rooms.GetObjectExternalData
@@ -43,19 +44,15 @@ namespace Agoda.Graphql.SupplyApi.Queries.Rooms.GetObjectExternalData
     }
     
     public sealed class ObjectExternalData 
-    {        
+    {
         [JsonProperty("objectId")]
         public long ObjectId { get; set; }
-        
         [JsonProperty("recStatus")]
         public int RecStatus { get; set; }
-        
         [JsonProperty("externalDataId")]
         public int ExternalDataId { get; set; }
-        
         [JsonProperty("objectType")]
         public string ObjectType { get; set; }
-        
         [JsonProperty("recModifyWhen")]
         public DateTime RecModifyWhen { get; set; }
     }
