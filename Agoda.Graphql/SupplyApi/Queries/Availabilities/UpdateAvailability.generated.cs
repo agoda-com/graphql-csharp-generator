@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using Agoda.Graphql;
 
 namespace Agoda.Graphql.SupplyApi.Queries.Availabilities
@@ -81,40 +82,29 @@ namespace Agoda.Graphql.SupplyApi.Queries.Availabilities
     }
     
     public sealed class AvailabilityMutation 
-    {        
+    {
         [JsonProperty("regularAllotment")]
         public int? RegularAllotment { get; set; }
-        
         [JsonProperty("guaranteedAllotment")]
         public int? GuaranteedAllotment { get; set; }
-        
         [JsonProperty("guaranteedAllotmentUsed")]
         public int? GuaranteedAllotmentUsed { get; set; }
-        
         [JsonProperty("regularAllotmentUsed")]
         public int? RegularAllotmentUsed { get; set; }
-        
         [JsonProperty("date")]
         public DateTime Date { get; set; }
-        
         [JsonProperty("propertyId")]
         public string PropertyId { get; set; }
-        
         [JsonProperty("dmcId")]
         public int DmcId { get; set; }
-        
         [JsonProperty("roomId")]
         public string RoomId { get; set; }
-        
         [JsonProperty("createdWhen")]
         public DateTime CreatedWhen { get; set; }
-        
         [JsonProperty("createdBy")]
         public string CreatedBy { get; set; }
-        
         [JsonProperty("modifiedWhen")]
         public DateTime? ModifiedWhen { get; set; }
-        
         [JsonProperty("modifiedBy")]
         public string ModifiedBy { get; set; }
     }

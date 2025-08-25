@@ -414,7 +414,13 @@ export const plugin: PluginFunction<AgodaCSharpCodegenConfig> = (
       // Handle DateTime formatting for Date types
       let value = pascalName;
       if (csharpType.includes('DateTime')) {
-        value = `${pascalName}.ToString("yyyy-MM-dd")`;
+        if (csharpType.includes('?')) {
+          // Nullable DateTime - use null-conditional operator
+          value = `${pascalName}?.ToString("yyyy-MM-dd")`;
+        } else {
+          // Non-nullable DateTime
+          value = `${pascalName}.ToString("yyyy-MM-dd")`;
+        }
       }
       
       return `            { "${name}", ${value} }`;
