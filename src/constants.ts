@@ -8,8 +8,9 @@ export const SCALAR_TYPES = [
     'DateTime',
     'LocalDate',
     'LocalDateTime',
+    'LocalTime',
     'BigInt',
     'BigDecimal',
     'Long',
-    'Json'
+    'Json',
 ];
