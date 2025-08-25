@@ -1,0 +1,22 @@
+query GetApmMultipleDiscountByKeys($apmMultipleDiscountKeys: [getApmMultipleDiscount!]!) { 
+  ApmMultipleDiscount (apmMultipleDiscountKeys: $apmMultipleDiscountKeys) {
+    apmAdjustmentDiscount {
+      ApmAdjustmentDiscountId
+      ProgramId
+      AdjustmentChannelId
+      AdjustmentDiscountPercent
+      CategoryName
+      StartDate
+      EndDate
+    }
+    apmCommissionDiscount {
+      ApmCommissionDiscountId
+      ProgramId
+      CommissionChannelId
+      CommissionDiscountPercent
+      CategoryName
+      StartDate
+      EndDate
+    }
+  }
+}

@@ -1,0 +1,10 @@
+﻿query GetCustomerSegmentSubContinents {
+	CustomerSegmentSubContinents {
+		subContinentId,
+		name,
+		continentId,
+		isActive,
+		sortOrder,
+		cmsItemId
+	}
+}

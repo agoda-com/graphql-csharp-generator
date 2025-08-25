@@ -1,0 +1,9 @@
+﻿query GetCustomerSegments {
+	CustomerSegments {
+		customerSegmentId,
+		customerSegmentGroupId,
+		languageId,
+		countryIso2,
+		isActive
+	}
+}
