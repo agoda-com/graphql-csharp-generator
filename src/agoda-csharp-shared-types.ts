@@ -6,6 +6,8 @@ import {
     typeFromAST,
     GraphQLSchema,
     GraphQLType,
+    GraphQLObjectType,
+    isObjectType,
     TypeNode,
     Kind
 } from 'graphql';
@@ -203,6 +205,26 @@ ${properties.join('\n')}
     return result;
 };
 
+// Helper function to get field type from schema
+const getFieldTypeFromSchema = (parentType: GraphQLType | null, fieldName: string): GraphQLType | null => {
+    try {
+        if (!parentType || !isObjectType(parentType)) {
+            return null;
+        }
+        
+        const fields = parentType.getFields();
+        const field = fields[fieldName];
+        
+        if (!field) {
+            return null;
+        }
+        
+        return field.type;
+    } catch (error) {
+        return null;
+    }
+};
+
 export const plugin: PluginFunction<AgodaCSharpSharedConfig> = (
     schema: GraphQLSchema,
     documents: Types.DocumentFile[],
@@ -221,6 +243,7 @@ export const plugin: PluginFunction<AgodaCSharpSharedConfig> = (
         
         visit(doc.document, {
             OperationDefinition: (node) => {
+                // Process variable definitions (input types and enums)
                 if (node.variableDefinitions) {
                     node.variableDefinitions.forEach(variableDef => {
                         const typeName = extractTypeName(variableDef.type);
@@ -237,7 +260,7 @@ export const plugin: PluginFunction<AgodaCSharpSharedConfig> = (
                                 }
                             });
                         } else if (isEnumTypeFromSchema(schema, typeName) && !processedTypes.has(typeName)) {
-                            console.log(`Found enum type: ${typeName}`);
+                            console.log(`Found enum type in variables: ${typeName}`);
                             
                             // Generate enum type
                             const enumDefinition = generateEnumFromGraphQLType(schema, typeName);
@@ -247,6 +270,64 @@ export const plugin: PluginFunction<AgodaCSharpSharedConfig> = (
                             }
                         }
                     });
+                }
+                
+                // Process selection sets (response types and enums)
+                if (node.selectionSet) {
+                    // Recursive function to process fields at any nesting level
+                    const processFieldRecursively = (selectionSet: any, parentType: GraphQLObjectType | null) => {
+                        visit(selectionSet, {
+                            Field: (fieldNode) => {
+                                if (parentType) {
+                                    const fieldType = getFieldTypeFromSchema(parentType, fieldNode.name.value);
+                                    if (fieldType) {
+                                        const namedType = getNamedType(fieldType);
+                                        const typeName = (namedType as any).name;
+                                        
+                                        if (isEnumTypeFromSchema(schema, typeName) && !processedTypes.has(typeName)) {
+                                            console.log(`Found enum type in response: ${typeName}`);
+                                            
+                                            // Generate enum type
+                                            const enumDefinition = generateEnumFromGraphQLType(schema, typeName);
+                                            if (enumDefinition && !allGeneratedTypes.includes(enumDefinition)) {
+                                                allGeneratedTypes.push(enumDefinition);
+                                                processedTypes.add(typeName);
+                                            }
+                                        }
+                                        
+                                        // Recursively process nested fields if this field has a selection set
+                                        if (fieldNode.selectionSet) {
+                                            const nestedType = getNamedType(fieldType);
+                                            if (isObjectType(nestedType)) {
+                                                processFieldRecursively(fieldNode.selectionSet, nestedType);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    };
+                    
+                    // Get the root type based on operation
+                    let rootType: GraphQLObjectType | null = null;
+                    try {
+                        switch (node.operation) {
+                            case 'query':
+                                rootType = schema.getQueryType() ?? null;
+                                break;
+                            case 'mutation':
+                                rootType = schema.getMutationType() ?? null;
+                                break;
+                            case 'subscription':
+                                rootType = schema.getSubscriptionType() ?? null;
+                                break;
+                        }
+                    } catch (error) {
+                        // console.log('Error getting root type from schema:', error.message);
+                    }
+                    
+                    // Start recursive processing from the root selection set
+                    processFieldRecursively(node.selectionSet, rootType);
                 }
             }
         });

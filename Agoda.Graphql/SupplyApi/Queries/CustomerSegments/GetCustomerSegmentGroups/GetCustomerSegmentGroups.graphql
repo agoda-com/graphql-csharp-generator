@@ -1,0 +1,11 @@
+﻿query GetCustomerSegmentGroups {
+	CustomerSegmentGroups {
+		customerSegmentGroupId,
+		name,
+		subContinentId,
+		cmsItemId,
+		isActive,
+		isLocal,
+		customerSegmentType
+	}
+}
