@@ -18,6 +18,7 @@ export const mapGraphQLTypeToCSharp = (typeName: string): string => {
         case 'ID': csharpType = 'string'; break;
         case 'LocalDate': csharpType = 'DateTime'; break;
         case 'LocalDateTime': csharpType = 'DateTime'; break;
+        case 'LocalTime': csharpType = 'DateTime'; break;
         case 'Json': csharpType = 'JToken'; break;
         default: 
             csharpType = toPascalCase(typeName); 

@@ -1,0 +1,29 @@
+query GetHotelPromotionSuggestionSettingByCity($cityId: Int!) {
+    PromotionSuggestionSettingsByCityPromotionType(cityId: $cityId){
+        id,
+        cityId,
+        promotionTypeId,
+        startDate,
+        endDate,
+        startMonth,
+        endMonth,
+        discountValue,
+        promotionDiscountTypeId,
+        minAdvPurchase,
+        maxAdvPurchase,
+        stayOn,
+        minNightsStay,
+        bookTimeFrom,
+        bookTimeTo,
+        isActive,
+        lastUpdatedBy,
+        lastUpdatedWhen,
+        PromotionSuggestion {
+            cityId,
+            promotionTypeId,
+            rank,
+            lastUpdatedBy,
+            lastUpdatedWhen
+        }
+    }
+}
